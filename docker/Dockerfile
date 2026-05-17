@@ -3,7 +3,10 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# npm install (não npm ci) — mais permissivo com optional deps platform-specific
+# do esbuild que vêm como deps de tsx. npm ci no alpine estava quebrando em
+# @esbuild/aix-ppc64 mesmo com "optional: true" + "os: [aix]" no lock.
+RUN npm install --no-audit --no-fund
 
 FROM node:22-alpine AS builder
 WORKDIR /app
