@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+.env
+.env.local
+docs
+tests
+scripts/google-discover.ts
+scripts/sync-once.ts
+*.log
+.vscode
+.idea
+secrets

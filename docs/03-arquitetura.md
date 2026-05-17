@@ -182,3 +182,5 @@ Sem Prometheus, sem Grafana — escopo de uma única escola.
 5. Cloudflare aponta para o IP da Hetzner; Swarm publica porta 80 → Cloudflare faz TLS.
 
 Detalhes finais (registry escolhido, conta GitHub) ficam pro plano de execução.
+
+> O manifesto `docker/stack.yml` é importado pelo Portainer. O JSON do service account vira **Docker secret** (`google_sa_key`) — criado uma vez via `docker secret create google_sa_key /path/to/json`. O container monta em `/run/secrets/google_sa_key` e a env var `GOOGLE_SERVICE_ACCOUNT_KEY_PATH` aponta para lá. A rede `edge` é compartilhada com um reverse proxy (Traefik/Caddy) que termina TLS via Cloudflare.
