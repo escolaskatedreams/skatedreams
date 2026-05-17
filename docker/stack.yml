@@ -1,0 +1,59 @@
+version: "3.9"
+
+# Stack do Swarm — template versionado.
+# A cópia renderizada (com segredos) fica em docker/stack.deploy.yml (gitignored)
+# e é a fonte para colar/atualizar no painel do Portainer.
+#
+# Variáveis esperadas (mesmas que .env.example da raiz, mais infra):
+#   REGISTRY, TAG, APP_HOST, TRAEFIK_CERT_RESOLVER
+#   POSTGRES_PASSWORD, ENCRYPTION_KEY, SESSION_SECRET
+#   SEED_EMAIL, SEED_PASSWORD
+#   GOOGLE_SERVICE_ACCOUNT_JSON (base64), GOOGLE_CALENDAR_ID
+
+services:
+  app:
+    image: ${REGISTRY}/skatedreams:${TAG:-latest}
+    environment:
+      DATABASE_URL: postgres://skatedreams:${POSTGRES_PASSWORD}@postgres:5432/skatedreams
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      SESSION_SECRET: ${SESSION_SECRET}
+      SEED_EMAIL: ${SEED_EMAIL}
+      SEED_PASSWORD: ${SEED_PASSWORD}
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${GOOGLE_SERVICE_ACCOUNT_JSON}
+      GOOGLE_CALENDAR_ID: ${GOOGLE_CALENDAR_ID}
+      NODE_ENV: production
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=network_swarm_public"
+        - "traefik.http.routers.skatedreams.rule=Host(`${APP_HOST}`)"
+        - "traefik.http.routers.skatedreams.entrypoints=websecure"
+        - "traefik.http.routers.skatedreams.tls=true"
+        - "traefik.http.routers.skatedreams.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencryptresolver}"
+        - "traefik.http.services.skatedreams.loadbalancer.server.port=3000"
+    networks: [internal, network_swarm_public]
+    depends_on: [postgres]
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: skatedreams
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: skatedreams
+    volumes:
+      - skatedreams_pg:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+    networks: [internal]
+
+volumes:
+  skatedreams_pg:
+
+networks:
+  internal:
+  network_swarm_public:
+    external: true
+    name: network_swarm_public

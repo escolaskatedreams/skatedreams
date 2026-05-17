@@ -34,7 +34,7 @@ yarn-error.log*
 .env*
 !.env.example
 docker/stack.env
-docker/stack.yml
+docker/stack.deploy.yml
 
 # secrets (service accounts, chaves, JWTs)
 /secrets/

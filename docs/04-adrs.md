@@ -158,7 +158,7 @@ Registros de Decisões Arquiteturais (Architecture Decision Records). Formato:
   - ✅ Sem fluxo OAuth, sem callback route, sem `accessTokenEnc`/`refreshTokenEnc`/`expiresAt` no banco.
   - ✅ Caio fez consentimento uma vez (compartilhamento da agenda) — não há re-autorização periódica.
   - ✅ Código mais simples (`src/lib/google/auth.ts` substitui `oauth-client.ts` + `callback/route.ts`).
-  - ⚠️ A chave do SA fica em `/secrets/google-service-account.json` (gitignored, perms 600). Rotação manual quando necessário.
+  - ⚠️ A chave do SA fica em `/secrets/google-service-account.json` localmente (gitignored, perms 600). Em produção a chave vai como env var base64 — ver [ADR-012](#adr-012--service-account-via-env-var-base64-em-vez-de-docker-secret). Rotação manual quando necessário.
   - ⚠️ O service account compartilhado é de outra automação (`automacoes-n8n-...`). Idealmente teria um SA dedicado da SkateDreams, mas reusa-se para evitar setup novo. Se a automação n8n for desativada e a chave revogada, este app quebra.
   - ⚠️ Migração de schema 0001 removeu colunas de tokens da `google_connection`; tabela vira "estado de sync" (calendar_id, sync_token, last_sync_at, service_account_email).
 - **Gatilho de revisão:** se a SkateDreams adquirir Google Workspace e precisar de domain-wide delegation, ou se o n8n for desativado (criar SA dedicado).
@@ -188,3 +188,41 @@ Registros de Decisões Arquiteturais (Architecture Decision Records). Formato:
   - ✅ Caio recebe sinal claro sobre a higiene da agenda dele.
   - ⚠️ Relatórios podem mostrar "Cinthia Gomes" duas vezes em horários sobrepostos. É correto, mas potencialmente confuso. Mitigação: explicar no relatório que "aulas duplicadas no mesmo horário podem ser séries acumuladas".
 - **Gatilho de revisão:** se o Caio fizer a limpeza no Google e os duplicados sumirem, o card de "Saúde" naturalmente esvazia. Se ele preferir auto-dedup no app, reabrir esta decisão.
+
+
+## ADR-012 — Service Account via env var base64 em vez de Docker secret
+
+- **Status:** Aceito — 2026-05-17 (substitui parte das consequências da [ADR-010](#adr-010--service-account-em-vez-de-oauth-web-client))
+- **Contexto:** A primeira tentativa de deploy entregava o JSON do service account ao container via **Docker Swarm secret** (`google_sa_key`), montado em `/run/secrets/google_sa_key`. Funciona, mas exige um passo manual no host (`docker secret create ...`) toda vez que se rebuilda o ambiente, e bloqueia o setup do stack pelo Portainer (que precisa achar o secret externo já criado).
+- **Opções consideradas:**
+  - (A) **Docker secret externo** (versão original) — `google_sa_key` criado uma vez via CLI, referenciado no `stack.yml` com `secrets: [google_sa_key]`.
+  - (B) **Env var com JSON em base64** — `GOOGLE_SERVICE_ACCOUNT_JSON` no Portainer, app decodifica em runtime.
+  - (C) **Env vars separadas** (`GOOGLE_CLIENT_EMAIL` + `GOOGLE_PRIVATE_KEY`) — comum, mas exige escape do `\n` na private key e estoura YAML.
+- **Decisão:** (B). `src/lib/google/auth.ts` aceita ambas as formas: prioriza `GOOGLE_SERVICE_ACCOUNT_JSON` (base64 → `JSON.parse` → `credentials`), faz fallback pra `GOOGLE_SERVICE_ACCOUNT_KEY_PATH` (dev local com arquivo). Schema de env (`src/env.ts`) exige que pelo menos uma das duas exista.
+- **Consequências:**
+  - ✅ Setup do stack no Portainer não depende mais de comando manual no host.
+  - ✅ Rotação da chave SA fica num único lugar (UI do Portainer).
+  - ✅ Dev local segue funcionando com o arquivo em `secrets/`.
+  - ⚠️ Env vars são visíveis em `docker inspect` e no painel do Portainer (Docker secrets, não). Trade-off aceitável para um único operador. Para múltiplos admins, reconsiderar.
+  - ⚠️ Geração do valor é manual: `base64 -w0 /caminho/service-account.json` (uma vez, ou na rotação).
+- **Gatilho de revisão:** entrada de operadores adicionais com acesso ao painel, ou requisito de compliance que exija segredos não-listáveis em `inspect`.
+
+## ADR-013 — Pipeline contínuo via webhook do Portainer
+
+- **Status:** Aceito — 2026-05-17
+- **Contexto:** Build da imagem já roda no GitHub Actions, mas redeployar o container exigia acessar o painel do Portainer e clicar "Update the stack". Inviável para o ritmo de mudanças do MVP. Queremos um único `git push` empurrar até produção.
+- **Opções consideradas:**
+  - (A) **Watchtower** rodando junto no Swarm, fazendo polling do GHCR a cada N min.
+  - (B) **Webhook de service** do Portainer chamado pelo CI ao final do build.
+  - (C) **SSH do CI** no host com `docker service update` direto.
+- **Decisão:** (B). Webhook por service (recurso disponível no Portainer CE). CI chama `POST` na URL gerada e o Portainer roda `docker service update --force` no service específico. URL guardada como `PORTAINER_WEBHOOK_URL` em GitHub Secrets.
+- **Consequências:**
+  - ✅ Push pra `main` → app em prod em ~5 min, sem intervenção humana.
+  - ✅ Sem agente extra rodando no host (vs. Watchtower).
+  - ✅ Sem credencial SSH no CI (vs. opção C). Webhook é write-only, escopo restrito a "trigger update neste service".
+  - ✅ GHCR público elimina necessidade de docker login no daemon do Swarm (ver decisão associada abaixo).
+  - ⚠️ Webhook só atualiza o **service**, não a **stack** — mudanças em labels Traefik / env nova exigem UI do Portainer.
+  - ⚠️ Se o token do webhook vazar, qualquer um pode disparar redeploy. Mitigação: webhook trocável via API do Portainer.
+- **Gatilho de revisão:** múltiplos ambientes (staging + prod), necessidade de aprovação humana antes de produção, ou exigência de rotação automatizada do webhook.
+
+**Decisão associada — GHCR público:** pacote `ghcr.io/escolaskatedreams/skatedreams` foi tornado **público** para evitar precisar `docker login` no daemon do Swarm (que exigiria PAT no host + `--with-registry-auth` em todo update). A imagem em si não embute credenciais (todas vêm via env), então o risco de expor o binário é mínimo. Se um dia algum segredo for embutido no build, voltar pra privado + login.
