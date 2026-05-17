@@ -3,14 +3,21 @@
 import { useState } from "react";
 
 const FLAG_DEFS = [
-  { type: "student_absent", icon: "❌", label: "Aluno faltou", color: "bg-brand-danger border-brand-danger text-brand-cloud" },
-  { type: "teacher_late", icon: "⏱️", label: "Atraso prof.", color: "bg-brand-warn border-brand-warn text-brand-ink" },
-  { type: "teacher_very_late", icon: "⏱️⏱️", label: "Atraso grave", color: "bg-brand-danger border-brand-danger text-brand-cloud" },
-  { type: "teacher_unmotivated", icon: "😐", label: "Desanimado", color: "bg-brand-muted border-brand-muted text-brand-cloud" },
-  { type: "students_disengaged", icon: "😭", label: "Sem engajamento", color: "bg-brand-warn border-brand-warn text-brand-ink" },
+  { type: "student_absent", icon: "❌", label: "Aluno faltou", activeClass: "bg-brand-danger text-brand-cloud border-brand-danger" },
+  { type: "teacher_late", icon: "⏱️", label: "Atraso prof.", activeClass: "bg-brand-warn text-brand-ink border-brand-warn" },
+  { type: "teacher_very_late", icon: "⏱️⏱️", label: "Atraso grave", activeClass: "bg-brand-danger text-brand-cloud border-brand-danger" },
+  { type: "teacher_unmotivated", icon: "😐", label: "Desanimado", activeClass: "bg-brand-muted text-brand-cloud border-brand-muted" },
+  { type: "students_disengaged", icon: "😭", label: "Sem engajamento", activeClass: "bg-brand-warn text-brand-ink border-brand-warn" },
 ] as const;
 
-export function FlagBar({ eventId, initialFlags }: { eventId: string; initialFlags: string[] }) {
+type Props = {
+  eventId: string;
+  initialFlags: string[];
+  onChange?: (next: string[]) => void;
+  size?: "sm" | "md"; // sm pra popover, md pra mobile card
+};
+
+export function FlagBar({ eventId, initialFlags, onChange, size = "md" }: Props) {
   const [flags, setFlags] = useState<Set<string>>(new Set(initialFlags));
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -20,6 +27,7 @@ export function FlagBar({ eventId, initialFlags }: { eventId: string; initialFla
     const next = new Set(flags);
     if (has) next.delete(type); else next.add(type);
     setFlags(next);
+    onChange?.([...next]);
     try {
       const res = await fetch(`/api/events/${eventId}/flags`, {
         method: has ? "DELETE" : "POST",
@@ -28,15 +36,20 @@ export function FlagBar({ eventId, initialFlags }: { eventId: string; initialFla
       });
       if (!res.ok) throw new Error("flag toggle failed");
     } catch {
-      // rollback
       setFlags(new Set(initialFlags));
+      onChange?.(initialFlags);
     } finally {
       setBusy(null);
     }
   }
 
+  const chipBase = size === "sm"
+    ? "h-9 px-2.5 gap-1.5 text-xs"
+    : "h-11 px-3.5 gap-2 text-sm";
+  const iconSize = size === "sm" ? "text-base" : "text-lg";
+
   return (
-    <div className="flex flex-wrap gap-2 justify-center">
+    <div className="flex flex-wrap gap-1.5">
       {FLAG_DEFS.map((f) => {
         const active = flags.has(f.type);
         const isBusy = busy === f.type;
@@ -47,13 +60,14 @@ export function FlagBar({ eventId, initialFlags }: { eventId: string; initialFla
             onClick={() => toggle(f.type)}
             aria-pressed={active}
             aria-label={f.label}
-            className={`h-14 min-w-14 px-3 rounded-2xl text-2xl flex items-center justify-center transition-all active:animate-scale-press ${
+            className={`inline-flex items-center font-medium rounded-full border transition-all active:animate-scale-press ${chipBase} ${
               active
-                ? `${f.color} shadow-soft-md`
-                : "bg-brand-sky-soft ring-1 ring-brand-ink/10 hover:ring-brand-primary/30"
-            } ${isBusy ? "opacity-50" : ""}`}
+                ? `${f.activeClass} shadow-soft`
+                : "bg-brand-sky-soft border-transparent text-brand-muted hover:text-brand-ink hover:bg-brand-cloud hover:border-brand-ink/10"
+            } ${isBusy ? "opacity-60" : ""}`}
           >
-            {f.icon}
+            <span className={`leading-none ${iconSize}`}>{f.icon}</span>
+            <span className="leading-none whitespace-nowrap">{f.label}</span>
           </button>
         );
       })}

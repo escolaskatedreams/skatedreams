@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { colorForEvent } from "@/lib/google/colors";
+import { useSwipe } from "@/lib/hooks/useSwipe";
 import { FlagBar } from "./FlagBar";
 
 type SlotEvent = {
@@ -22,9 +23,13 @@ function fmtTime(iso: string) {
 
 export function SlotCard({ events }: { events: SlotEvent[] }) {
   const [idx, setIdx] = useState(0);
-  const ev = events[idx];
   const total = events.length;
+  const ev = events[idx];
   const { bg, fg } = colorForEvent(ev.googleColorId, ev.status);
+
+  const goNext = () => setIdx((i) => (i + 1) % total);
+  const goPrev = () => setIdx((i) => (i - 1 + total) % total);
+  const { ref, handlers } = useSwipe({ onLeft: goNext, onRight: goPrev });
 
   return (
     <article className="bg-brand-cloud rounded-2xl shadow-soft-md ring-1 ring-brand-ink/5 overflow-hidden animate-fade-in-up">
@@ -40,7 +45,9 @@ export function SlotCard({ events }: { events: SlotEvent[] }) {
       </header>
 
       <div
-        className="mx-4 mb-4 rounded-xl px-4 py-3 transition-colors"
+        ref={ref}
+        {...handlers}
+        className="mx-4 mb-4 rounded-xl px-4 py-3 transition-colors touch-pan-y select-none"
         style={{ background: bg, color: fg }}
       >
         <div className="font-display text-lg leading-tight">
@@ -49,16 +56,21 @@ export function SlotCard({ events }: { events: SlotEvent[] }) {
         {ev.studentName && ev.title !== ev.studentName && (
           <div className="text-xs opacity-80 mt-0.5 truncate">{ev.title}</div>
         )}
+        {total > 1 && (
+          <div className="text-[10px] opacity-70 mt-1 font-medium">
+            ← arraste para trocar de aula →
+          </div>
+        )}
       </div>
 
       <div className="px-4 pb-4">
-        <FlagBar eventId={ev.id} initialFlags={ev.flags} />
+        <FlagBar eventId={ev.id} initialFlags={ev.flags} size="md" />
       </div>
 
       {total > 1 && (
         <div className="px-4 pb-4 flex items-center justify-between">
           <button
-            onClick={() => setIdx((i) => (i - 1 + total) % total)}
+            onClick={goPrev}
             aria-label="Anterior"
             className="h-10 w-10 rounded-full bg-brand-sky-soft hover:bg-brand-sky text-brand-ink flex items-center justify-center active:animate-scale-press transition-colors"
           >
@@ -72,13 +84,15 @@ export function SlotCard({ events }: { events: SlotEvent[] }) {
               {events.map((_, i) => (
                 <span
                   key={i}
-                  className={`w-1.5 h-1.5 rounded-full ${i === idx ? "bg-brand-primary" : "bg-brand-ink/15"}`}
+                  className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                    i === idx ? "bg-brand-primary" : "bg-brand-ink/15"
+                  }`}
                 />
               ))}
             </div>
           </div>
           <button
-            onClick={() => setIdx((i) => (i + 1) % total)}
+            onClick={goNext}
             aria-label="Próximo"
             className="h-10 w-10 rounded-full bg-brand-sky-soft hover:bg-brand-sky text-brand-ink flex items-center justify-center active:animate-scale-press transition-colors"
           >
