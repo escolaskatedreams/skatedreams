@@ -21,7 +21,7 @@
               │
               ▼ HTTPS
         Google Calendar API
-        OAuth 2.0 — events, events.readonly
+        Service Account (JWT) — calendar.events
 ```
 
 Tudo num único container Next.js. Postgres num container irmão. Cron de sync roda no mesmo processo Node usando `setInterval` em ambiente server (registrado em `instrumentation.ts`). Não há fila de jobs externa — não justifica para o volume esperado.
@@ -59,8 +59,6 @@ app-skatedreams/
 │   │   ├── config/
 │   │   ├── @modal/(.)aula/[id]/   # route intercepting do modal
 │   │   └── api/
-│   │       ├── auth/[...]
-│   │       ├── google/callback/
 │   │       ├── calendar/sync/
 │   │       ├── events/[id]/
 │   │       ├── events/[id]/flags/
@@ -72,7 +70,7 @@ app-skatedreams/
 │   │   └── layout/
 │   ├── lib/
 │   │   ├── auth/
-│   │   ├── google/                # cliente OAuth + Calendar
+│   │   ├── google/                # auth (SA) + Calendar
 │   │   ├── sync/                  # rotina de sync incremental
 │   │   ├── reports/               # agregações SQL
 │   │   ├── crypto/                # AES-GCM helpers
@@ -105,11 +103,8 @@ export const users = pgTable("users", {
 
 export const googleConnection = pgTable("google_connection", {
   id: uuid("id").primaryKey().defaultRandom(),
-  googleEmail: text("google_email").notNull(),
-  accessTokenEnc: text("access_token_enc").notNull(),
-  refreshTokenEnc: text("refresh_token_enc").notNull(),
-  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-  calendarId: text("calendar_id").notNull().default("primary"),
+  calendarId: text("calendar_id").notNull(),
+  serviceAccountEmail: text("service_account_email"),
   lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
   syncToken: text("sync_token"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -150,15 +145,15 @@ Onde `FlagType = "student_absent" | "teacher_late" | "teacher_very_late" | "teac
 
 Os fluxos detalhados estão na seção 3 da apresentação de design e refletidos no `02-escopo`. Os 4 que mais merecem atenção arquitetural:
 
-1. **OAuth do Google** — fluxo em `/api/google/callback`. State param para CSRF. Tokens passam por `lib/crypto/aes-gcm.ts` antes do `INSERT`.
-2. **Sync incremental** — `lib/sync/run.ts` chamado a cada 5 min via `setInterval` registrado em `instrumentation.ts`. Mutex em memória + `SELECT FOR UPDATE` na linha de `google_connection` para impedir overlap. Quando `syncToken` retorna 410, faz full sync da janela `[-90d, +30d]`.
-3. **Edição de evento** — operação dual-write: nossa API faz `events.patch()` no Google **primeiro**, com etag; só em caso de sucesso (200) atualiza o cache local. Falha → erro visível ao usuário, sem inconsistência.
-4. **Toggle de flag** — escrita local somente. Sem efeito colateral fora do app. Operação simples.
+1. **Auth Google** — `lib/google/auth.ts` instancia `google.auth.GoogleAuth` lendo `/secrets/google-service-account.json` (apontado por `GOOGLE_SERVICE_ACCOUNT_KEY_PATH`). Sem callback, sem refresh token, sem encryption.
+2. **Sync incremental** — `lib/sync/run.ts` chamado a cada 5 min via `setInterval` registrado em `instrumentation.ts`. Mutex em memória previne overlap. Quando `syncToken` retorna 410, faz full sync da janela `[-90d, +30d]` com paginação automática.
+3. **Edição de evento** — operação dual-write: `events.patch()` no Google primeiro, com etag; só em caso de sucesso atualiza o cache local. Falha → erro visível ao usuário, sem inconsistência.
+4. **Toggle de flag** — escrita local somente. Sem efeito colateral fora do app.
 
 ## Segurança
 
 - Senhas com **bcrypt** (cost factor 12+).
-- Tokens OAuth criptografados com **AES-256-GCM** usando `ENCRYPTION_KEY` (32 bytes random, no env).
+- Chave do service account em `/secrets/google-service-account.json` (gitignored, perms 600) localmente; em produção via Docker secret montado em `/run/secrets/google_sa_key`. `ENCRYPTION_KEY` mantida no env como utilitário disponível (módulo `lib/crypto/aes-gcm.ts` para usos futuros — atualmente sem consumidor).
 - Cookies de sessão: `HttpOnly`, `Secure`, `SameSite=Lax`, expira em 7 dias.
 - Cloudflare na frente, com regra básica para bloquear bots agressivos.
 - Variáveis de ambiente em `.env` no host, montadas como secrets do Docker Swarm.
