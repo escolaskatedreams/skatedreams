@@ -19,6 +19,7 @@
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
+    "googleapis": "^171.4.0",
     "iron-session": "^8.0.4",
     "next": "^15.5.18",
     "pg": "^8.20.0",
