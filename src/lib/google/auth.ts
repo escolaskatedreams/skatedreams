@@ -14,18 +14,26 @@ let cachedAuth: ReturnType<typeof google.auth.GoogleAuth.prototype.getClient> ex
 
 /**
  * Retorna um cliente Google autenticado via service account.
- * O JSON do SA fica em /secrets/ (fora do git), apontado por GOOGLE_SERVICE_ACCOUNT_KEY_PATH.
+ * Em produção usa GOOGLE_SERVICE_ACCOUNT_JSON (base64 do JSON inteiro).
+ * Em dev local cai pra GOOGLE_SERVICE_ACCOUNT_KEY_PATH (arquivo em /secrets/).
  */
 export async function getGoogleClient() {
   if (cachedAuth) return cachedAuth;
-  const keyFile = path.isAbsolute(env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH)
-    ? env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH
-    : path.resolve(process.cwd(), env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH);
 
-  const auth = new google.auth.GoogleAuth({
-    keyFile,
+  const authConfig: { scopes: string[]; credentials?: object; keyFile?: string } = {
     scopes: SCOPES,
-  });
+  };
+
+  if (env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+    const raw = Buffer.from(env.GOOGLE_SERVICE_ACCOUNT_JSON, "base64").toString("utf8");
+    authConfig.credentials = JSON.parse(raw);
+  } else if (env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH) {
+    authConfig.keyFile = path.isAbsolute(env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH)
+      ? env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH
+      : path.resolve(process.cwd(), env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH);
+  }
+
+  const auth = new google.auth.GoogleAuth(authConfig);
   const client = await auth.getClient();
   cachedAuth = client as never;
   return client as unknown as OAuth2Client;

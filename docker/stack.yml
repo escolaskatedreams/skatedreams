@@ -9,11 +9,9 @@ services:
       SESSION_SECRET: ${SESSION_SECRET}
       SEED_EMAIL: ${SEED_EMAIL}
       SEED_PASSWORD: ${SEED_PASSWORD}
-      GOOGLE_SERVICE_ACCOUNT_KEY_PATH: /run/secrets/google_sa_key
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${GOOGLE_SERVICE_ACCOUNT_JSON}
       GOOGLE_CALENDAR_ID: ${GOOGLE_CALENDAR_ID}
       NODE_ENV: production
-    secrets:
-      - google_sa_key
     deploy:
       replicas: 1
       restart_policy:
@@ -49,7 +47,3 @@ networks:
   network_swarm_public:
     external: true
     name: network_swarm_public
-
-secrets:
-  google_sa_key:
-    external: true
