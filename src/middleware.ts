@@ -18,5 +18,6 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // Exclui estáticos internos, favicon e qualquer arquivo com extensão de imagem servido de /public.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:jpg|jpeg|png|svg|gif|webp|ico|avif)$).*)"],
 };

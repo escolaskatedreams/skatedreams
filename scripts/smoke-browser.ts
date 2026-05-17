@@ -18,6 +18,9 @@ async function main() {
   page.on("console", (msg) => {
     if (msg.type() === "error") errors.push(`console.error: ${msg.text()}`);
   });
+  page.on("response", (r) => {
+    if (r.status() >= 400) errors.push(`HTTP ${r.status()} ${r.url()}`);
+  });
 
   console.log("== Login ==");
   await page.goto(`${BASE}/login`);
