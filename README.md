@@ -50,15 +50,21 @@ Next.js 15 · React 19 · TypeScript · Tailwind v3 · FullCalendar v6 · Drizzl
 
 ## Deploy
 
-Docker Swarm via Portainer na Hetzner, Cloudflare na frente. Ver `docker/stack.yml` e `docs/03-arquitetura.md`.
+Docker Swarm via Portainer na Hetzner, Cloudflare na frente. Ver `docs/03-arquitetura.md`.
 
-Antes do deploy:
-1. `docker secret create google_sa_key /path/to/service-account.json` (no host Swarm)
-2. Ajustar env vars do stack (`POSTGRES_PASSWORD`, `ENCRYPTION_KEY`, `SESSION_SECRET`, etc.)
-3. Importar `docker/stack.yml` no Portainer
+Pipeline contínuo (`.github/workflows/build-and-deploy.yml`):
+
+```
+push main → build & push GHCR (:latest + :sha) → POST webhook Portainer → service update
+```
+
+Service account vai como env var base64 (`GOOGLE_SERVICE_ACCOUNT_JSON`), não como docker secret.
+Stack file e env file moram fora do git (`docker/stack.yml`, `docker/stack.env` — ambos gitignored, único source-of-truth é o painel do Portainer).
+
+App em produção: <https://app.skatedreams.com.br>.
 
 ## Estado atual (2026-05-17)
 
-MVP funcional. Login, agenda com FullCalendar, modal de aula com edição e flags, relatórios consolidados, export CSV. Service account já conectada à agenda `escolaskatedreams@gmail.com`. ~4800 eventos sincronizados.
+MVP em produção. Login, agenda com FullCalendar, modal de aula com edição e flags, relatórios consolidados, export CSV. Service account já conectada à agenda `escolaskatedreams@gmail.com`. ~4800 eventos sincronizados.
 
 Identidade visual provisória (`docs/brand/design-system.md` v0). Aguarda brand book oficial do Caio.
