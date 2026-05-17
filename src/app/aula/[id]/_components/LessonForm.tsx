@@ -23,6 +23,14 @@ const FLAG_DEFS = [
   { type: "students_disengaged", icon: "😭", label: "Alunos não engajados" },
 ] as const;
 
+const FLAG_COLORS: Record<string, string> = {
+  student_absent: "bg-brand-danger border-brand-danger",
+  teacher_late: "bg-brand-warn border-brand-warn text-brand-dark",
+  teacher_very_late: "bg-brand-danger border-brand-danger",
+  teacher_unmotivated: "bg-brand-muted border-brand-muted",
+  students_disengaged: "bg-brand-warn border-brand-warn text-brand-dark",
+};
+
 function toLocalInput(iso: string) {
   const d = new Date(iso);
   const off = d.getTimezoneOffset();
@@ -118,7 +126,7 @@ export function LessonForm({ event }: Props) {
                 type="button"
                 onClick={() => toggleFlag(f.type)}
                 className={`min-w-14 h-14 px-3 rounded-lg border text-xl flex items-center justify-center ${
-                  active ? "bg-neutral-900 text-white border-neutral-900" : "bg-white"
+                  active ? `${FLAG_COLORS[f.type]} text-white` : "bg-white"
                 }`}
                 aria-pressed={active}
                 title={f.label}
@@ -131,7 +139,7 @@ export function LessonForm({ event }: Props) {
       </div>
 
       <div className="flex gap-2">
-        <button onClick={save} disabled={saving} className="bg-neutral-900 text-white px-4 py-2 rounded">
+        <button onClick={save} disabled={saving} className="bg-brand-primary text-white px-4 py-2 rounded">
           {saving ? "Salvando..." : "Salvar"}
         </button>
         <button type="button" onClick={() => router.back()} className="px-4 py-2 rounded border">

@@ -17,7 +17,7 @@ export async function Topbar() {
     <header className="border-b bg-white">
       <nav className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/agenda" className="font-bold">
+          <Link href="/agenda" className="font-bold font-display text-xl">
             SkateDreams
           </Link>
           <Link href="/agenda" className="text-sm hover:underline">
