@@ -77,15 +77,15 @@ export function CalendarView({ showCancelled = false }: { showCancelled?: boolea
       <FullCalendar
         ref={fcRef}
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-        initialView="timeGridWeek"
+        initialView="timeGridDay"
         locale="pt-br"
         firstDay={1}
         headerToolbar={{
           left: "prev,next today",
           center: "title",
-          right: "dayGridMonth,timeGridWeek,timeGridDay",
+          right: "",
         }}
-        buttonText={{ today: "Hoje", month: "Mês", week: "Semana", day: "Dia" }}
+        buttonText={{ today: "Hoje" }}
         allDaySlot={false}
         slotMinTime="07:00:00"
         slotMaxTime="22:00:00"
@@ -101,8 +101,10 @@ export function CalendarView({ showCancelled = false }: { showCancelled?: boolea
             const rect = el.getBoundingClientRect();
             const vw = window.innerWidth;
             const popoverWidth = 320;
-            const align: "left" | "right" = rect.left + popoverWidth + 16 < vw ? "left" : "right";
-            const left = align === "left" ? rect.right + 8 : rect.left - popoverWidth - 8;
+            // Posiciona diretamente colado na borda direita do card (sem gap).
+            // Se não couber à direita, encosta na borda esquerda.
+            const fitsRight = rect.right + popoverWidth <= vw - 8;
+            const left = fitsRight ? rect.right : rect.left - popoverWidth;
             setPopover({
               eventId: ev.id,
               studentName: (ev.extendedProps.studentName as string | null) ?? null,
@@ -111,7 +113,7 @@ export function CalendarView({ showCancelled = false }: { showCancelled?: boolea
               initialFlags: (ev.extendedProps.flags as string[]) ?? [],
               top: rect.top,
               left,
-              align,
+              align: fitsRight ? "left" : "right",
             });
           };
 
