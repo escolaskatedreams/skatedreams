@@ -10,5 +10,14 @@ services:
     volumes:
       - skatedreams_pg:/var/lib/postgresql/data
 
+  postgres-test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: skatedreams
+      POSTGRES_PASSWORD: skatedreams_dev
+      POSTGRES_DB: skatedreams_test
+    ports:
+      - "5433:5432"
+
 volumes:
   skatedreams_pg:
