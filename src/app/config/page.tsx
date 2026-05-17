@@ -35,7 +35,7 @@ export default async function ConfigPage() {
           </p>
         )}
         <form action={forceSyncAction}>
-          <button className="bg-brand-dark text-brand-light px-4 py-2 rounded">Sincronizar agora</button>
+          <button className="bg-brand-primary text-brand-cloud px-4 py-2 rounded hover:bg-brand-primary-strong">Sincronizar agora</button>
         </form>
       </section>
 

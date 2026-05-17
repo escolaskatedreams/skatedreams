@@ -20,8 +20,8 @@ export function CalendarView() {
       title: r.title,
       start: r.start,
       end: r.end,
-      backgroundColor: r.status === "cancelled" ? "#6B7280" : "#0F1115",
-      borderColor: r.status === "cancelled" ? "#6B7280" : "#0F1115",
+      backgroundColor: r.status === "cancelled" ? "#6B7A99" : "#1F4FB0",
+      borderColor: r.status === "cancelled" ? "#6B7A99" : "#1F4FB0",
       extendedProps: { studentName: r.studentName, flags: r.flags, status: r.status },
     }));
   }, []);

@@ -37,7 +37,7 @@ export default async function RelatoriosPage({
             className="border rounded px-2 py-1"
           />
         </div>
-        <button className="bg-brand-dark text-brand-light px-3 py-1.5 rounded text-sm">Aplicar</button>
+        <button className="bg-brand-primary text-brand-cloud px-3 py-1.5 rounded text-sm hover:bg-brand-primary-strong">Aplicar</button>
         <a
           href={`/api/reports/export?from=${from.toISOString()}&to=${to.toISOString()}`}
           className="border px-3 py-1.5 rounded text-sm"

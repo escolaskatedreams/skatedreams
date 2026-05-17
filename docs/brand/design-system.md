@@ -1,69 +1,76 @@
-# SkateDreams Design System — v0 (provisório)
+# SkateDreams Design System — v1 (derivado da logo)
 
-> Este é um design system **provisório**, criado antes de termos acesso aos assets oficiais da marca. Todos os valores aqui são guesses informados baseados em (a) o posicionamento conhecido da escola ("uma nova forma de ensinar skate — segura e divertida") e (b) convenções da cultura skate urbana. **Vai ser revisado** assim que o Caio fornecer logo, paleta e fotografia oficiais.
+> Design system **v1**, derivado diretamente da logo oficial (`docs/brand/assets/logo/skatedreams-logo-1.jpg`). A paleta, o espírito e as proporções tipográficas foram extraídos da imagem real da marca — não é mais um placeholder.
 
 ## Princípios de marca
 
-1. **Seguro e divertido** — tagline oficial; o sistema visual deve transmitir segurança/profissionalismo sem perder energia.
-2. **Urbano e jovem** — público inclui crianças, adolescentes e adultos iniciantes; estética skate culture sem ser hostil/excludente.
-3. **Pais como decisores** — alunos menores chegam pelos responsáveis; visual precisa funcionar para os dois públicos.
+1. **Dreamy** — a forma de nuvem da logo é leitura dupla: skate visto de cima + nuvem. O sistema visual deve evocar leveza, possibilidade e sonho.
+2. **Bold** — azul cobalto profundo, fontes geométricas pesadas, contraste alto. Não é delicado demais.
+3. **Youthful** — público jovem (crianças, adolescentes, adultos iniciantes) e seus responsáveis. Energia sem ser caótico.
 
-## Paleta provisória
+## Logo
 
-Valores **placeholder** a serem substituídos. Codinome aspiracional baseado em cultura skate + identidade brasileira.
+Asset disponível: `docs/brand/assets/logo/skatedreams-logo-1.jpg` (318 × 318 px, JPG).
 
-| Token             | HEX        | Uso                                            |
-|-------------------|------------|------------------------------------------------|
-| `--brand-primary` | `#FF5A1F`  | Laranja energético (CTAs, destaques)           |
-| `--brand-dark`    | `#0F1115`  | Quase-preto (texto, fundos escuros)            |
-| `--brand-light`   | `#FAFAF7`  | Off-white (fundo claro)                        |
-| `--brand-accent`  | `#3DDC84`  | Verde ação (sucesso, presença)                 |
-| `--brand-warn`    | `#FFC93C`  | Amarelo (atrasos leves)                        |
-| `--brand-danger`  | `#E63946`  | Vermelho (atrasos graves, faltas)              |
-| `--brand-muted`   | `#6B7280`  | Cinza (texto secundário)                       |
+- Forma: nuvem cobalto profundo sobre fundo azul-céu pastel.
+- Highlights brancos no topo simulam reflexo de luz / nuvem.
+- Dupla leitura: skate visto de cima + nuvem = "dreams".
+- Servida estaticamente em `/public/skatedreams-logo.jpg` (asset Next.js).
 
-## Tokens para flags do professor (semântica direta)
+## Paleta de cores
 
-| Flag                    | Emoji | Cor token         |
-|-------------------------|-------|-------------------|
-| Aluno não veio          | ❌    | `--brand-danger`  |
-| Atraso professor        | ⏱️   | `--brand-warn`    |
-| Atraso grave            | ⏱️⏱️ | `--brand-danger`  |
-| Professor desanimado    | 😐    | `--brand-muted`   |
-| Alunos não engajados    | 😭    | `--brand-warn`    |
+Extraída da logo. Tokens implementados no `tailwind.config.ts` sob `colors.brand`.
 
-## Tipografia provisória
+| Token                  | HEX        | Uso                                              |
+|------------------------|------------|--------------------------------------------------|
+| `brand-primary`        | `#1F4FB0`  | Azul cobalto — cor principal da marca, CTAs, links |
+| `brand-primary-strong` | `#143A8A`  | Hover/active do primary                          |
+| `brand-sky`            | `#C9E0EA`  | Fundo institucional pastel                       |
+| `brand-sky-soft`       | `#E8F2F7`  | Background mais sutil (cards, painéis)           |
+| `brand-cloud`          | `#FFFFFF`  | Branco-nuvem — contraste em superfícies azuis    |
+| `brand-ink`            | `#0F1B3D`  | Navy escuro — texto pesado, headings             |
+| `brand-muted`          | `#6B7A99`  | Texto secundário (cinza com tom azul)            |
+| `brand-success`        | `#3DBE7A`  | Verde — presença, positivo                       |
+| `brand-warn`           | `#F5B935`  | Amarelo-mostarda — atrasos leves, alertas        |
+| `brand-danger`         | `#E14B5A`  | Vermelho-coral — faltas, atrasos graves, erros   |
 
-| Token            | Valor                                  | Uso                  |
-|------------------|----------------------------------------|----------------------|
-| `--font-display` | `'Archivo', 'Inter', sans-serif`       | Títulos, hero        |
-| `--font-body`    | `'Inter', system-ui, sans-serif`       | Texto corrido, UI    |
-| `--font-mono`    | `ui-monospace, 'JetBrains Mono'`       | Horários, dados      |
+## Tokens para flags de aula
 
-Justificativa: fontes geométricas com personalidade (Archivo) + neutra confiável (Inter). Trocáveis quando soubermos as oficiais.
+| Flag                     | Tipo                   | Cor token                                           |
+|--------------------------|------------------------|-----------------------------------------------------|
+| Aluno não veio           | `student_absent`       | `brand-danger`                                      |
+| Atraso professor (leve)  | `teacher_late`         | `brand-warn` + texto `brand-ink`                    |
+| Atraso grave             | `teacher_very_late`    | `brand-danger`                                      |
+| Professor desanimado     | `teacher_unmotivated`  | `brand-muted`                                       |
+| Alunos não engajados     | `students_disengaged`  | `brand-warn` + texto `brand-ink`                    |
 
-## Espaçamento / radius
+## Tipografia
 
-Sistema base-4: `4, 8, 12, 16, 24, 32, 48, 64px`.
-Border radius padrão: `8px`. Cards de aula: `12px`. Avatares: `pill`.
+| Token            | Valor                            | Uso                       |
+|------------------|----------------------------------|---------------------------|
+| `font-display`   | `Archivo, Inter, sans-serif`     | Títulos, hero, nome da marca |
+| `font-body`      | `Inter, system-ui, sans-serif`   | Texto corrido, UI, labels |
+| `font-mono`      | `ui-monospace, JetBrains Mono`   | Horários, dados numéricos |
 
-## Componentes-chave (a ser detalhado na fase de UI)
+Justificativa: Archivo tem forma geométrica arredondada que combina com a bolha/nuvem da logo. Inter é neutra e legível em qualquer tamanho. Trocáveis se o cliente fornecer fontes oficiais diferentes.
 
-- `Calendar` (visualização semana/dia tipo Google Agenda)
+## Espaçamento e border-radius
+
+- Sistema base-4: `4, 8, 12, 16, 24, 32, 48, 64 px`.
+- Border radius padrão: `8px`.
+- Cards de aula: `12px`.
+- Avatares: `pill` (border-radius: 9999px).
+
+## Componentes-chave
+
+- `Calendar` (visualização semana/dia, eventos em `brand-primary`)
 - `LessonCard` (evento de aula com slots para flags)
-- `FlagChip` (botão/badge para cada flag de aula)
+- `FlagChip` (botão/badge para cada flag de aula, cores semânticas acima)
 - `TeacherAvatar`
 - `StudentList` (dentro de LessonCard)
 
-## O que vai mudar quando os assets oficiais chegarem
+## Próximos passos
 
-- Substituir paleta pelas cores reais da marca
-- Substituir fontes provisórias pelas oficiais
-- Adicionar logo em todas as variantes (claro/escuro/mono)
-- Definir grid e proporções fotográficas
-- Criar guidelines de uso do logo
-
-## Referência
-
-- Princípios e tokens devem ser implementados como CSS variables ou tokens (TailwindCSS theme / shadcn) no app.
-- Quando o cliente fornecer brand book oficial, este arquivo deve ser atualizado e versionado.
+- Logo SVG vetorial (para escala sem perda em retina/impressão).
+- Fontes oficiais da marca — se forem diferentes de Archivo/Inter, substituir tokens.
+- Fotografia institucional — guidelines de proporção, paleta de temperatura, composição.

@@ -6,13 +6,16 @@ export default {
     extend: {
       colors: {
         brand: {
-          primary: "#FF5A1F",
-          dark: "#0F1115",
-          light: "#FAFAF7",
-          accent: "#3DDC84",
-          warn: "#FFC93C",
-          danger: "#E63946",
-          muted: "#6B7280",
+          primary: "#1F4FB0",
+          "primary-strong": "#143A8A",
+          sky: "#C9E0EA",
+          "sky-soft": "#E8F2F7",
+          cloud: "#FFFFFF",
+          ink: "#0F1B3D",
+          muted: "#6B7A99",
+          success: "#3DBE7A",
+          warn: "#F5B935",
+          danger: "#E14B5A",
         },
       },
       fontFamily: {

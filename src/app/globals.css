@@ -6,6 +6,6 @@
 
 html, body {
   font-family: var(--font-body, "Inter"), system-ui, sans-serif;
-  background: theme("colors.brand.light");
-  color: theme("colors.brand.dark");
+  background: theme("colors.brand.sky-soft");
+  color: theme("colors.brand.ink");
 }

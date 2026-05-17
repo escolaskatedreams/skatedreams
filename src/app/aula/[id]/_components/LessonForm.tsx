@@ -25,10 +25,10 @@ const FLAG_DEFS = [
 
 const FLAG_COLORS: Record<string, string> = {
   student_absent: "bg-brand-danger border-brand-danger",
-  teacher_late: "bg-brand-warn border-brand-warn text-brand-dark",
+  teacher_late: "bg-brand-warn border-brand-warn text-brand-ink",
   teacher_very_late: "bg-brand-danger border-brand-danger",
   teacher_unmotivated: "bg-brand-muted border-brand-muted",
-  students_disengaged: "bg-brand-warn border-brand-warn text-brand-dark",
+  students_disengaged: "bg-brand-warn border-brand-warn text-brand-ink",
 };
 
 function toLocalInput(iso: string) {
@@ -139,7 +139,7 @@ export function LessonForm({ event }: Props) {
       </div>
 
       <div className="flex gap-2">
-        <button onClick={save} disabled={saving} className="bg-brand-primary text-white px-4 py-2 rounded">
+        <button onClick={save} disabled={saving} className="bg-brand-primary text-brand-cloud px-4 py-2 rounded hover:bg-brand-primary-strong">
           {saving ? "Salvando..." : "Salvar"}
         </button>
         <button type="button" onClick={() => router.back()} className="px-4 py-2 rounded border">
