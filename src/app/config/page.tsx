@@ -1,7 +1,7 @@
 import { requireSession } from "@/lib/auth/guards";
 import { getConnection } from "@/lib/google/connection";
 import { getCalendarId } from "@/lib/google/auth";
-import { logoutAction } from "./actions";
+import { forceSyncAction, logoutAction } from "./actions";
 
 export default async function ConfigPage() {
   await requireSession();
@@ -34,9 +34,9 @@ export default async function ConfigPage() {
             Aguardando primeira sincronização. Clique no botão abaixo para forçar agora.
           </p>
         )}
-        <p className="text-xs text-neutral-500">
-          Endpoint de sincronização manual será adicionado junto com o cron (Task 14).
-        </p>
+        <form action={forceSyncAction}>
+          <button className="bg-neutral-900 text-white px-4 py-2 rounded">Sincronizar agora</button>
+        </form>
       </section>
 
       <section className="border rounded-lg p-4">
