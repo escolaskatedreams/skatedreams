@@ -13,4 +13,29 @@ const schema = z.object({
   SYNC_WINDOW_FUTURE_DAYS: z.coerce.number().int().positive().default(30),
 });
 
-export const env = schema.parse(process.env);
+type Env = z.infer<typeof schema>;
+
+let cached: Env | null = null;
+
+// Durante `next build` o Next avalia módulos pra coletar page data, e várias
+// libs (db pool, iron-session) tocam env.X no top-level. Nessa fase, devolvemos
+// process.env sem validar — o build não precisa de envs reais. Em runtime
+// (entrypoint do container), a validação completa roda no primeiro acesso.
+function isBuildPhase(): boolean {
+  return process.env.NEXT_PHASE === "phase-production-build";
+}
+
+function load(): Env {
+  if (cached) return cached;
+  if (isBuildPhase()) {
+    return process.env as unknown as Env;
+  }
+  cached = schema.parse(process.env);
+  return cached;
+}
+
+export const env = new Proxy({} as Env, {
+  get(_target, key: string) {
+    return load()[key as keyof Env];
+  },
+});

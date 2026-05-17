@@ -7,6 +7,10 @@ export const metadata: Metadata = {
   description: "Controle de aulas",
 };
 
+// Topbar consulta o DB no SSR. Sem isso, o pre-render estático
+// de /_not-found e / tenta conectar no Postgres durante o build.
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({
   children,
   modal,
