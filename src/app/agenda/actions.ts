@@ -3,6 +3,7 @@
 import { and, eq, gte, lte, ne } from "drizzle-orm";
 import { db, calendarEvents, eventFlags } from "@/lib/db";
 import { requireSession } from "@/lib/auth/guards";
+import { startOfWeek, addDays } from "date-fns";
 
 export async function listEventsBetween(
   startISO: string,
@@ -46,4 +47,13 @@ export async function listEventsBetween(
     googleColorId: e.googleColorId,
     flags: byEvent[e.id] ?? [],
   }));
+}
+
+export async function listEventsForWeek(anchorISO: string, showCancelled = false) {
+  await requireSession();
+  const anchor = new Date(anchorISO);
+  // Semana começa segunda (weekStartsOn: 1)
+  const start = startOfWeek(anchor, { weekStartsOn: 1 });
+  const end = addDays(start, 7);
+  return listEventsBetween(start.toISOString(), end.toISOString(), { showCancelled });
 }
