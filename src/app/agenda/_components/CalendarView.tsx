@@ -119,7 +119,10 @@ export function CalendarView({ showCancelled = false }: { showCancelled?: boolea
             const vw = window.innerWidth;
             const popoverWidth = 320;
             const fitsRight = visibleRight + popoverWidth <= vw - 8;
-            const left = fitsRight ? visibleRight : rect.left - popoverWidth;
+            // Pequena sobreposição (8px) garante que mouse entra no popover
+            // antes de sair do source — sem isso há uma race entre mouseleave
+            // do evento e mouseenter do popover, e o popover fecha.
+            const left = fitsRight ? visibleRight - 8 : rect.left - popoverWidth + 8;
             setPopover({
               eventId: ev.id,
               studentName: (ev.extendedProps.studentName as string | null) ?? null,
@@ -148,7 +151,7 @@ export function CalendarView({ showCancelled = false }: { showCancelled?: boolea
           }}
           onMouseEnter={clearHide}
           onMouseLeave={scheduleHide}
-          className="w-80 bg-brand-cloud rounded-2xl shadow-soft-xl ring-1 ring-brand-ink/10 p-4 space-y-3 animate-fade-in-up"
+          className="w-80 bg-brand-cloud rounded-2xl shadow-soft-xl ring-1 ring-brand-ink/10 p-4 space-y-3"
           role="dialog"
           aria-label="Marcar flags"
         >
