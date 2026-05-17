@@ -99,12 +99,27 @@ export function CalendarView({ showCancelled = false }: { showCancelled?: boolea
           const open = () => {
             clearHide();
             const rect = el.getBoundingClientRect();
+
+            // FullCalendar sobrepõe eventos com width FULL da coluna + z-index.
+            // rect.right é a borda do elemento full (não do strip visível).
+            // Computa "visibleRight" como a borda esquerda do próximo evento
+            // sobreposto na mesma linha (ou rect.right se for o último).
+            const allEvents = document.querySelectorAll(
+              ".fc-timegrid-event, .fc-daygrid-event",
+            ) as NodeListOf<HTMLElement>;
+            let visibleRight = rect.right;
+            for (const sib of allEvents) {
+              if (sib === el) continue;
+              const sr = sib.getBoundingClientRect();
+              if (Math.abs(sr.top - rect.top) < 4 && sr.left > rect.left && sr.left < visibleRight) {
+                visibleRight = sr.left;
+              }
+            }
+
             const vw = window.innerWidth;
             const popoverWidth = 320;
-            // Posiciona diretamente colado na borda direita do card (sem gap).
-            // Se não couber à direita, encosta na borda esquerda.
-            const fitsRight = rect.right + popoverWidth <= vw - 8;
-            const left = fitsRight ? rect.right : rect.left - popoverWidth;
+            const fitsRight = visibleRight + popoverWidth <= vw - 8;
+            const left = fitsRight ? visibleRight : rect.left - popoverWidth;
             setPopover({
               eventId: ev.id,
               studentName: (ev.extendedProps.studentName as string | null) ?? null,
