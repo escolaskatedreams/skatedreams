@@ -2,10 +2,117 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Inter:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Boldonse&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
 
 html, body {
-  font-family: var(--font-body, "Inter"), system-ui, sans-serif;
+  font-family: var(--font-body, "Hanken Grotesk"), system-ui, sans-serif;
   background: theme("colors.brand.sky-soft");
   color: theme("colors.brand.ink");
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  z-index: 0;
+}
+
+/* Tema SkateDreams para FullCalendar */
+.fc {
+  font-family: var(--font-body, "Hanken Grotesk"), system-ui, sans-serif;
+}
+
+.fc .fc-toolbar.fc-header-toolbar {
+  margin-bottom: 1.25rem;
+}
+
+.fc .fc-toolbar-title {
+  font-family: "Boldonse", system-ui, sans-serif;
+  font-size: 1.5rem;
+  color: theme("colors.brand.ink");
+  letter-spacing: -0.02em;
+}
+
+.fc .fc-button {
+  background: theme("colors.brand.cloud");
+  border: 1px solid theme("colors.brand.sky");
+  color: theme("colors.brand.ink");
+  font-weight: 500;
+  text-transform: none;
+  border-radius: 9999px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  box-shadow: 0 1px 2px rgba(15, 27, 61, 0.04);
+  transition: all 0.15s ease;
+}
+
+.fc .fc-button:hover {
+  background: theme("colors.brand.sky-soft");
+  border-color: theme("colors.brand.primary");
+  color: theme("colors.brand.primary");
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  background: theme("colors.brand.primary");
+  border-color: theme("colors.brand.primary");
+  color: theme("colors.brand.cloud");
+  box-shadow: 0 4px 12px -2px rgba(31, 79, 176, 0.30);
+}
+
+.fc .fc-button-primary:focus {
+  box-shadow: 0 0 0 3px rgba(31, 79, 176, 0.20);
+}
+
+.fc-event {
+  border-radius: 0.5rem !important;
+  border-width: 0 !important;
+  box-shadow: 0 1px 3px rgba(15, 27, 61, 0.08);
+  padding: 2px 4px !important;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  cursor: pointer;
+}
+
+.fc-event:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px -2px rgba(15, 27, 61, 0.16);
+}
+
+.fc-timegrid-slot {
+  height: 2.5rem !important;
+}
+
+.fc-col-header-cell {
+  background: theme("colors.brand.sky-soft");
+  border-color: theme("colors.brand.sky") !important;
+}
+
+.fc-col-header-cell-cushion {
+  font-family: "Boldonse", system-ui, sans-serif;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: theme("colors.brand.muted");
+  padding: 0.5rem !important;
+}
+
+.fc-day-today {
+  background: rgba(31, 79, 176, 0.04) !important;
+}
+
+.fc .fc-timegrid-now-indicator-line {
+  border-color: theme("colors.brand.danger");
+  border-width: 2px;
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+  border-top-color: theme("colors.brand.danger");
+  border-bottom-color: theme("colors.brand.danger");
+}
+
+.fc-scrollgrid, .fc-scrollgrid td, .fc-scrollgrid th {
+  border-color: theme("colors.brand.sky") !important;
 }

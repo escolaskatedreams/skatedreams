@@ -15,32 +15,34 @@ export default async function RelatoriosPage({
   const rows = await getReport(from.toISOString(), to.toISOString());
 
   return (
-    <main className="max-w-7xl mx-auto p-4 space-y-4">
-      <h1 className="text-2xl font-bold">Relatórios</h1>
+    <main className="max-w-7xl mx-auto p-4 space-y-6">
+      <h1 className="font-display text-4xl text-brand-ink">Relatórios</h1>
 
-      <form className="flex flex-wrap gap-2 items-end">
+      <form className="flex flex-wrap gap-3 items-end">
         <div>
-          <label className="block text-xs mb-1">De</label>
+          <label className="block text-xs font-medium text-brand-ink mb-1.5 uppercase tracking-wider">De</label>
           <input
             type="date"
             name="from"
             defaultValue={from.toISOString().slice(0, 10)}
-            className="border rounded px-2 py-1"
+            className="bg-brand-sky-soft border-0 rounded-xl px-4 py-2.5 font-body focus:ring-2 focus:ring-brand-primary focus:bg-brand-cloud transition-all outline-none text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs mb-1">Até</label>
+          <label className="block text-xs font-medium text-brand-ink mb-1.5 uppercase tracking-wider">Até</label>
           <input
             type="date"
             name="to"
             defaultValue={to.toISOString().slice(0, 10)}
-            className="border rounded px-2 py-1"
+            className="bg-brand-sky-soft border-0 rounded-xl px-4 py-2.5 font-body focus:ring-2 focus:ring-brand-primary focus:bg-brand-cloud transition-all outline-none text-sm"
           />
         </div>
-        <button className="bg-brand-primary text-brand-cloud px-3 py-1.5 rounded text-sm hover:bg-brand-primary-strong">Aplicar</button>
+        <button className="bg-brand-primary text-brand-cloud px-5 py-2.5 rounded-full text-sm font-medium hover:bg-brand-primary-strong hover:shadow-glow active:animate-scale-press transition-all">
+          Aplicar
+        </button>
         <a
           href={`/api/reports/export?from=${from.toISOString()}&to=${to.toISOString()}`}
-          className="border px-3 py-1.5 rounded text-sm"
+          className="px-5 py-2.5 rounded-full text-sm font-medium bg-brand-cloud ring-1 ring-brand-ink/10 text-brand-muted hover:text-brand-ink hover:ring-brand-primary/30 transition-all shadow-soft"
         >
           Exportar CSV
         </a>

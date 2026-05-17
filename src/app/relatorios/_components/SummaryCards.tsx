@@ -25,9 +25,9 @@ export function SummaryCards({ rows }: { rows: StudentRow[] }) {
 
 function Card({ title, value }: { title: string; value: string }) {
   return (
-    <div className="bg-white border rounded-lg p-3">
-      <div className="text-xs text-neutral-500">{title}</div>
-      <div className="text-lg font-semibold mt-1">{value}</div>
+    <div className="bg-brand-cloud rounded-2xl p-4 shadow-soft-md ring-1 ring-brand-ink/5">
+      <div className="text-xs uppercase tracking-wider text-brand-muted font-medium">{title}</div>
+      <div className="font-display text-3xl text-brand-ink mt-1">{value}</div>
     </div>
   );
 }

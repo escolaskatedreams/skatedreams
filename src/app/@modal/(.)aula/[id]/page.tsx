@@ -12,9 +12,12 @@ export default async function LessonModal({ params }: { params: Promise<{ id: st
   const flags = await db.select().from(eventFlags).where(eq(eventFlags.eventId, id));
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto p-6">
-        <h2 className="text-xl font-bold mb-4">Aula</h2>
+    <div className="fixed inset-0 bg-brand-ink/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="bg-brand-cloud rounded-t-3xl sm:rounded-3xl shadow-soft-xl ring-1 ring-brand-ink/10 w-full sm:max-w-lg max-h-[90vh] overflow-y-auto p-6">
+        <div className="flex justify-center mb-4 sm:hidden">
+          <div className="w-10 h-1 rounded-full bg-brand-sky" />
+        </div>
+        <h2 className="font-display text-2xl text-brand-ink mb-4">Aula</h2>
         <LessonForm
           event={{
             id: event.id,

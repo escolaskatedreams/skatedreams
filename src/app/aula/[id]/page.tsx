@@ -13,7 +13,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
 
   return (
     <main className="max-w-2xl mx-auto p-6">
-      <h1 className="text-xl font-bold mb-4">Aula</h1>
+      <h1 className="font-display text-3xl text-brand-ink mb-6">Aula</h1>
       <LessonForm
         event={{
           id: event.id,

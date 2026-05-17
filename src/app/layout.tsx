@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className="bg-brand-sky-soft min-h-screen text-brand-ink">
+      <body className="bg-brand-sky-soft bg-atmosphere min-h-screen text-brand-ink font-body antialiased">
         <Topbar />
         {children}
         {modal}

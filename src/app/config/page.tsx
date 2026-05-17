@@ -14,13 +14,13 @@ export default async function ConfigPage() {
 
   return (
     <main className="max-w-2xl mx-auto p-8 space-y-8">
-      <h1 className="text-3xl font-bold">Configurações</h1>
+      <h1 className="font-display text-4xl text-brand-ink">Configurações</h1>
 
-      <section className="border rounded-lg p-4 space-y-3 bg-brand-cloud">
-        <h2 className="text-xl font-semibold">Google Calendar</h2>
+      <section className="bg-brand-cloud rounded-2xl shadow-soft-md p-6 ring-1 ring-brand-ink/5 space-y-3">
+        <h2 className="font-display text-2xl text-brand-ink">Google Calendar</h2>
         <p className="text-sm text-brand-muted">
           Conectado via <strong>service account</strong> ao calendário{" "}
-          <code className="bg-brand-sky-soft px-1 rounded">{calendarId}</code>.
+          <code className="bg-brand-sky-soft px-1.5 py-0.5 rounded-md font-mono text-xs">{calendarId}</code>.
         </p>
         {conn ? (
           <p className="text-sm text-brand-muted">
@@ -33,14 +33,14 @@ export default async function ConfigPage() {
           </p>
         )}
         <form action={forceSyncAction}>
-          <button className="bg-brand-primary text-brand-cloud px-4 py-2 rounded hover:bg-brand-primary-strong">
+          <button className="bg-brand-primary text-brand-cloud px-5 py-2 rounded-full font-medium hover:bg-brand-primary-strong hover:shadow-glow active:animate-scale-press transition-all">
             Sincronizar agora
           </button>
         </form>
       </section>
 
-      <section className="border rounded-lg p-4 space-y-3 bg-brand-cloud">
-        <h2 className="text-xl font-semibold">Saúde dos dados</h2>
+      <section className="bg-brand-cloud rounded-2xl shadow-soft-md p-6 ring-1 ring-brand-ink/5 space-y-4">
+        <h2 className="font-display text-2xl text-brand-ink">Saúde dos dados</h2>
         <div className="grid grid-cols-2 gap-3 text-sm">
           <Stat label="Eventos sincronizados" value={String(hygiene.totalEvents)} />
           <Stat label="Confirmados" value={String(hygiene.confirmed)} />
@@ -49,16 +49,19 @@ export default async function ConfigPage() {
         </div>
 
         {hygiene.duplicateSlotsCount > 0 && (
-          <div className="border-l-4 border-brand-warn bg-brand-sky-soft p-3 text-sm space-y-2">
-            <p className="font-medium text-brand-ink">
-              ⚠️ {hygiene.duplicateSlotsCount} horários com eventos sobrepostos do mesmo aluno
-            </p>
-            <p className="text-brand-muted">
+          <div className="bg-brand-warn/10 border border-brand-warn/30 rounded-2xl p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-brand-warn animate-pulse" />
+              <p className="font-medium text-brand-ink">
+                {hygiene.duplicateSlotsCount} horários com eventos sobrepostos do mesmo aluno
+              </p>
+            </div>
+            <p className="text-sm text-brand-muted">
               A agenda do Google tem múltiplas séries recorrentes apontando para o mesmo aluno no
               mesmo horário (provavelmente importações antigas acumuladas). O app reflete fielmente,
               mas vale uma limpeza direto no Google Calendar.
             </p>
-            <p className="text-brand-muted">Top 5 piores:</p>
+            <p className="text-sm text-brand-muted">Top 5 piores:</p>
             <ul className="text-xs space-y-1 font-mono">
               {hygiene.topDuplicates.map((d, i) => (
                 <li key={i}>
@@ -71,9 +74,11 @@ export default async function ConfigPage() {
         )}
       </section>
 
-      <section className="border rounded-lg p-4 bg-brand-cloud">
+      <section className="bg-brand-cloud rounded-2xl shadow-soft-md p-6 ring-1 ring-brand-ink/5">
         <form action={logoutAction}>
-          <button className="text-brand-danger underline">Sair</button>
+          <button className="text-brand-danger font-medium px-4 py-2 rounded-full border border-brand-danger/20 hover:bg-brand-danger/5 transition-colors">
+            Sair
+          </button>
         </form>
       </section>
     </main>
@@ -82,9 +87,9 @@ export default async function ConfigPage() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-brand-sky-soft rounded p-2">
+    <div className="bg-brand-sky-soft rounded-xl p-3">
       <div className="text-xs text-brand-muted">{label}</div>
-      <div className="text-lg font-semibold text-brand-ink">{value}</div>
+      <div className="font-display text-2xl text-brand-ink mt-1">{value}</div>
     </div>
   );
 }
