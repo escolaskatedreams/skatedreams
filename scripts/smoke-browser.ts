@@ -47,13 +47,25 @@ async function main() {
   await page.goto(`${BASE}/relatorios`);
   await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => {});
 
-  console.log("== voltar pra agenda + click no 1o evento (abre modal) ==");
+  console.log("== voltar pra agenda + hover + click 1o evento ==");
   await page.goto(`${BASE}/agenda`);
   await page.waitForSelector(".fc-event", { timeout: 15_000 });
-  await page.locator(".fc-event").first().click({ force: true });
-  await page.waitForTimeout(2000);
-  const modalOpen = await page.locator('text=Aula').first().isVisible();
-  console.log(`  Modal/página aberto? ${modalOpen}`);
+
+  // Hover: dispatch event diretamente (FC envolve em um harness que intercepta)
+  const firstEvent = page.locator(".fc-event").first();
+  await firstEvent.dispatchEvent("mouseenter");
+  await page.waitForTimeout(400);
+  const popoverVisible = await page.locator('[role="dialog"][aria-label="Marcar flags"]').isVisible().catch(() => false);
+  console.log(`  Popover de hover visível? ${popoverVisible}`);
+
+  // Click: deve navegar pra /aula/[id]
+  await firstEvent.click({ force: true });
+  try {
+    await page.waitForURL(/\/aula\//, { timeout: 5000 });
+    console.log(`  ✓ Click navegou para: ${page.url()}`);
+  } catch {
+    console.log(`  ✗ Click NÃO navegou (continua em ${page.url()})`);
+  }
 
   console.log("== toggle Mostrar cancelados ==");
   await page.goto(`${BASE}/agenda?cancelados=1`);
