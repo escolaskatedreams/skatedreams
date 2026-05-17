@@ -1,43 +1,51 @@
 import { db, googleConnection } from "@/lib/db";
-import { encrypt, decrypt } from "@/lib/crypto/aes-gcm";
-import { env } from "@/env";
-import { makeOAuthClient } from "./oauth-client";
+import { getGoogleClient, getCalendarId } from "./auth";
 
-export async function saveConnection(input: {
-  googleEmail: string;
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: Date;
-}) {
-  await db.delete(googleConnection);
-  await db.insert(googleConnection).values({
-    googleEmail: input.googleEmail,
-    accessTokenEnc: encrypt(input.accessToken, env.ENCRYPTION_KEY),
-    refreshTokenEnc: encrypt(input.refreshToken, env.ENCRYPTION_KEY),
-    expiresAt: input.expiresAt,
-    calendarId: "primary",
-  });
-}
+export type ConnectionState = {
+  id: string;
+  calendarId: string;
+  serviceAccountEmail: string | null;
+  lastSyncAt: Date | null;
+  syncToken: string | null;
+};
 
-export async function getConnection() {
+/**
+ * Estado de sincronização singleton.
+ * Diferente do modelo OAuth antigo: não há mais tokens em repouso —
+ * autenticação vem do JSON do service account em /secrets/.
+ */
+export async function getConnection(): Promise<ConnectionState | null> {
   const rows = await db.select().from(googleConnection).limit(1);
-  if (rows.length === 0) return null;
-  const c = rows[0];
-  return {
-    ...c,
-    accessToken: decrypt(c.accessTokenEnc, env.ENCRYPTION_KEY),
-    refreshToken: decrypt(c.refreshTokenEnc, env.ENCRYPTION_KEY),
-  };
+  return rows[0] ?? null;
 }
 
+export async function ensureConnection(serviceAccountEmail: string): Promise<ConnectionState> {
+  const existing = await getConnection();
+  if (existing) return existing;
+  const [row] = await db
+    .insert(googleConnection)
+    .values({ calendarId: getCalendarId(), serviceAccountEmail })
+    .returning();
+  return row;
+}
+
+export async function updateSyncState(input: {
+  id: string;
+  syncToken?: string | null;
+  lastSyncAt?: Date;
+}) {
+  const set: Record<string, unknown> = {};
+  if (input.syncToken !== undefined) set.syncToken = input.syncToken;
+  if (input.lastSyncAt !== undefined) set.lastSyncAt = input.lastSyncAt;
+  if (Object.keys(set).length === 0) return;
+  const { eq } = await import("drizzle-orm");
+  await db.update(googleConnection).set(set).where(eq(googleConnection.id, input.id));
+}
+
+/**
+ * Retorna o cliente Google autenticado (service account).
+ * Compatibilidade com sync/run.ts e demais consumidores.
+ */
 export async function getAuthorizedClient() {
-  const conn = await getConnection();
-  if (!conn) throw new Error("No google connection");
-  const client = makeOAuthClient();
-  client.setCredentials({
-    access_token: conn.accessToken,
-    refresh_token: conn.refreshToken,
-    expiry_date: conn.expiresAt.getTime(),
-  });
-  return client;
+  return getGoogleClient();
 }

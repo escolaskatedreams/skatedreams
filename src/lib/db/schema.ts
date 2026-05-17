@@ -23,13 +23,13 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// Estado de sincronização da agenda Google.
+// Com service account, autenticação não fica no banco — só estado de sync.
+// Singleton (uma linha) mantida para evolução futura (multi-calendar).
 export const googleConnection = pgTable("google_connection", {
   id: uuid("id").primaryKey().defaultRandom(),
-  googleEmail: text("google_email").notNull(),
-  accessTokenEnc: text("access_token_enc").notNull(),
-  refreshTokenEnc: text("refresh_token_enc").notNull(),
-  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-  calendarId: text("calendar_id").notNull().default("primary"),
+  calendarId: text("calendar_id").notNull(),
+  serviceAccountEmail: text("service_account_email"),
   lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
   syncToken: text("sync_token"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

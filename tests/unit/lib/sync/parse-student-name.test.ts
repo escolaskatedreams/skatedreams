@@ -2,6 +2,17 @@ import { describe, it, expect } from "vitest";
 import { parseStudentName } from "@/lib/sync/parse-student-name";
 
 describe("parseStudentName", () => {
+  it("extrai do padrão real da SkateDreams 'Nome | id: N'", () => {
+    expect(parseStudentName("Vivian Buelau | id: 50")).toBe("Vivian Buelau");
+    expect(parseStudentName("Anne Caroline | id: 241")).toBe("Anne Caroline");
+    expect(parseStudentName("Livia | id: 261")).toBe("Livia");
+  });
+
+  it("extrai padrão 'Nome | id: N' tolerante a espaçamento", () => {
+    expect(parseStudentName("Pedro|id:7")).toBe("Pedro");
+    expect(parseStudentName("Maria Silva  |  id:  99")).toBe("Maria Silva");
+  });
+
   it("extrai do padrão 'Aula — Nome — 16h'", () => {
     expect(parseStudentName("Aula — Joãozinho — 16h")).toBe("Joãozinho");
   });

@@ -1,10 +1,12 @@
 import { requireSession } from "@/lib/auth/guards";
 import { getConnection } from "@/lib/google/connection";
-import { startGoogleOAuth, disconnectGoogle, logoutAction } from "./actions";
+import { getCalendarId } from "@/lib/google/auth";
+import { logoutAction } from "./actions";
 
 export default async function ConfigPage() {
   await requireSession();
   const conn = await getConnection();
+  const calendarId = getCalendarId();
 
   return (
     <main className="max-w-2xl mx-auto p-8 space-y-8">
@@ -12,34 +14,29 @@ export default async function ConfigPage() {
 
       <section className="border rounded-lg p-4 space-y-3">
         <h2 className="text-xl font-semibold">Google Calendar</h2>
+        <p className="text-sm text-neutral-600">
+          Conectado via <strong>service account</strong> ao calendário{" "}
+          <code className="bg-neutral-100 px-1 rounded">{calendarId}</code>.
+        </p>
         {conn ? (
-          <>
-            <p className="text-sm text-neutral-600">
-              Conectado como <strong>{conn.googleEmail}</strong>.
-            </p>
-            <p className="text-sm text-neutral-600">
-              Última sync:{" "}
-              {conn.lastSyncAt
-                ? new Intl.DateTimeFormat("pt-BR", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  }).format(conn.lastSyncAt)
-                : "ainda não"}
-            </p>
-            <form action={disconnectGoogle}>
-              <button className="bg-red-600 text-white px-4 py-2 rounded">Desconectar</button>
-            </form>
-          </>
+          <p className="text-sm text-neutral-600">
+            Última sincronização:{" "}
+            {conn.lastSyncAt
+              ? new Intl.DateTimeFormat("pt-BR", {
+                  dateStyle: "short",
+                  timeStyle: "short",
+                }).format(conn.lastSyncAt)
+              : "ainda não rodou"}
+            .
+          </p>
         ) : (
-          <>
-            <p className="text-sm text-neutral-600">Nenhuma conta Google conectada.</p>
-            <form action={startGoogleOAuth}>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded">
-                Conectar Google Calendar
-              </button>
-            </form>
-          </>
+          <p className="text-sm text-neutral-600">
+            Aguardando primeira sincronização. Clique no botão abaixo para forçar agora.
+          </p>
         )}
+        <p className="text-xs text-neutral-500">
+          Endpoint de sincronização manual será adicionado junto com o cron (Task 14).
+        </p>
       </section>
 
       <section className="border rounded-lg p-4">

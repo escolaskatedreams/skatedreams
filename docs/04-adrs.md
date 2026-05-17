@@ -144,3 +144,25 @@ Registros de Decisões Arquiteturais (Architecture Decision Records). Formato:
   - ✅ MVP entrega "relatório por aluno" sem cadastrar nada.
   - ⚠️ Se Caio começar a usar formatos divergentes, perdemos eventos do relatório. Mitigação: tela `/relatorios` mostra contagem de "eventos sem aluno identificado" — sinal para corrigir títulos ou ajustar a heurística.
 - **Gatilho de revisão:** mais de 10% dos eventos sem aluno identificado, ou cliente pedir features que exijam entidade `students` real (foto, contato, observações longitudinais).
+
+## ADR-010 — Service Account em vez de OAuth Web Client
+
+- **Status:** Aceito — 2026-05-17 (substitui parte das decisões anteriores sobre integração Google)
+- **Contexto:** O cliente forneceu um arquivo de credenciais de **service account** (`geral-google@automacoes-n8n-491322.iam.gserviceaccount.com`) já existente, reaproveitado de uma automação n8n. Para a SkateDreams ter aulas sincronizadas no app, precisamos acessar o Google Calendar `escolaskatedreams@gmail.com`. Caio já compartilhou a agenda com o email do SA com permissão "Fazer alterações e gerenciar compartilhamento".
+- **Opções consideradas:**
+  - (A) **Service Account com calendário compartilhado** (o que o cliente forneceu).
+  - (B) **OAuth 2.0 Web Client** (plano original): exigiria criar credenciais novas no GCP, callback route, encryption de refresh tokens, fluxo de consent. Mais complexo.
+  - (C) **API Key**: descartado — só permite leitura de calendários públicos; não atende ao requisito de edição (F5).
+- **Decisão:** (A). O SA assina JWTs e troca por access tokens transparentemente via `google.auth.GoogleAuth` — sem refresh tokens persistidos.
+- **Consequências:**
+  - ✅ Sem fluxo OAuth, sem callback route, sem `accessTokenEnc`/`refreshTokenEnc`/`expiresAt` no banco.
+  - ✅ Caio fez consentimento uma vez (compartilhamento da agenda) — não há re-autorização periódica.
+  - ✅ Código mais simples (`src/lib/google/auth.ts` substitui `oauth-client.ts` + `callback/route.ts`).
+  - ⚠️ A chave do SA fica em `/secrets/google-service-account.json` (gitignored, perms 600). Rotação manual quando necessário.
+  - ⚠️ O service account compartilhado é de outra automação (`automacoes-n8n-...`). Idealmente teria um SA dedicado da SkateDreams, mas reusa-se para evitar setup novo. Se a automação n8n for desativada e a chave revogada, este app quebra.
+  - ⚠️ Migração de schema 0001 removeu colunas de tokens da `google_connection`; tabela vira "estado de sync" (calendar_id, sync_token, last_sync_at, service_account_email).
+- **Gatilho de revisão:** se a SkateDreams adquirir Google Workspace e precisar de domain-wide delegation, ou se o n8n for desativado (criar SA dedicado).
+
+## ADR-009 (atualização) — Padrão real de título de aula
+
+- O padrão observado na agenda da SkateDreams é `<Nome do aluno> | id: <N>`, não `Aula — Nome — 16h` como o plano original assumiu. O parser `parseStudentName` foi atualizado para cobrir esse caso como prioritário, mantendo os fallbacks anteriores. O `id: N` parece ser uma referência externa (planilha de Caio?) — não vamos usar por enquanto, só extrair o nome.
