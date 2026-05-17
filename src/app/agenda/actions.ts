@@ -1,18 +1,32 @@
 "use server";
 
-import { and, gte, lte } from "drizzle-orm";
+import { and, eq, gte, lte, ne } from "drizzle-orm";
 import { db, calendarEvents, eventFlags } from "@/lib/db";
 import { requireSession } from "@/lib/auth/guards";
 
-export async function listEventsBetween(startISO: string, endISO: string) {
+export async function listEventsBetween(
+  startISO: string,
+  endISO: string,
+  opts: { showCancelled?: boolean } = {},
+) {
   await requireSession();
   const start = new Date(startISO);
   const end = new Date(endISO);
 
+  const conditions = [
+    gte(calendarEvents.startsAt, start),
+    lte(calendarEvents.startsAt, end),
+  ];
+  if (!opts.showCancelled) {
+    conditions.push(eq(calendarEvents.status, "confirmed"));
+    // O Caio às vezes renomeia eventos para "CANCELLED" antes de deletar — esconder esses também.
+    conditions.push(ne(calendarEvents.title, "CANCELLED"));
+  }
+
   const events = await db
     .select()
     .from(calendarEvents)
-    .where(and(gte(calendarEvents.startsAt, start), lte(calendarEvents.startsAt, end)));
+    .where(and(...conditions));
 
   const flags = await db.select().from(eventFlags);
 

@@ -166,3 +166,25 @@ Registros de Decisões Arquiteturais (Architecture Decision Records). Formato:
 ## ADR-009 (atualização) — Padrão real de título de aula
 
 - O padrão observado na agenda da SkateDreams é `<Nome do aluno> | id: <N>`, não `Aula — Nome — 16h` como o plano original assumiu. O parser `parseStudentName` foi atualizado para cobrir esse caso como prioritário, mantendo os fallbacks anteriores. O `id: N` parece ser uma referência externa (planilha de Caio?) — não vamos usar por enquanto, só extrair o nome.
+
+## ADR-011 — Fidelidade ao Google Calendar como fonte da verdade
+
+- **Status:** Aceito — 2026-05-17
+- **Contexto:** Ao sincronizar 4778 eventos da agenda real (`escolaskatedreams@gmail.com`), observamos:
+  - 1480 eventos marcados como `status=cancelled` (~31% do total). Subdividem-se em:
+    - 423 com título literalmente `"CANCELLED"` (Caio renomeou eventos antes de excluir manualmente).
+    - 1057 com status `cancelled` do Google e título preservado (cancelamentos formais).
+  - Vários slots de horário com **múltiplas séries recorrentes apontando para o mesmo aluno** (ex.: "Karina Rocha | id: 356" tem 39 séries distintas convergindo no domingo 09h). Origem provável: importações sucessivas de planilha ao longo do tempo, sem limpeza das séries antigas.
+- **Opções consideradas:**
+  - (A) **Refletir fielmente; esconder cancelados no view por padrão; sinalizar duplicações ao usuário.**
+  - (B) Auto-deduplicar por `(title, starts_at)` durante a sincronização.
+  - (C) Soft-delete via `studentName=null` para eventos suspeitos.
+- **Decisão:** (A). O app não modifica nem esconde dados da agenda; só:
+  1. Filtra `status='cancelled'` E `title='CANCELLED'` do `/agenda` por padrão (toggle `?cancelados=1` para mostrar).
+  2. Exibe em `/config` → "Saúde dos dados" um card sinalizando duplicações para o Caio limpar manualmente no Google.
+- **Consequências:**
+  - ✅ App não esconde dados — Caio sempre consegue ver o que está na agenda real.
+  - ✅ View padrão fica limpa (1057 cancelados + 423 renomeados saem da tela).
+  - ✅ Caio recebe sinal claro sobre a higiene da agenda dele.
+  - ⚠️ Relatórios podem mostrar "Cinthia Gomes" duas vezes em horários sobrepostos. É correto, mas potencialmente confuso. Mitigação: explicar no relatório que "aulas duplicadas no mesmo horário podem ser séries acumuladas".
+- **Gatilho de revisão:** se o Caio fizer a limpeza no Google e os duplicados sumirem, o card de "Saúde" naturalmente esvazia. Se ele preferir auto-dedup no app, reabrir esta decisão.

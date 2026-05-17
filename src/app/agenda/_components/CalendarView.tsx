@@ -9,12 +9,12 @@ import { useRouter } from "next/navigation";
 import { LessonEventCard } from "@/components/calendar/LessonEventCard";
 import { listEventsBetween } from "../actions";
 
-export function CalendarView() {
+export function CalendarView({ showCancelled = false }: { showCancelled?: boolean }) {
   const ref = useRef<FullCalendar | null>(null);
   const router = useRouter();
 
   const fetchEvents = useCallback(async (info: { startStr: string; endStr: string }) => {
-    const rows = await listEventsBetween(info.startStr, info.endStr);
+    const rows = await listEventsBetween(info.startStr, info.endStr, { showCancelled });
     return rows.map((r) => ({
       id: r.id,
       title: r.title,
@@ -24,7 +24,7 @@ export function CalendarView() {
       borderColor: r.status === "cancelled" ? "#6B7A99" : "#1F4FB0",
       extendedProps: { studentName: r.studentName, flags: r.flags, status: r.status },
     }));
-  }, []);
+  }, [showCancelled]);
 
   return (
     <FullCalendar
