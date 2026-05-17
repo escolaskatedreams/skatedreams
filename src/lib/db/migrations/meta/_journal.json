@@ -15,6 +15,13 @@
       "when": 1779026900000,
       "tag": "0001_remove_oauth_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779027400000,
+      "tag": "0002_add_color_id",
+      "breakpoints": true
     }
   ]
 }

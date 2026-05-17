@@ -15,6 +15,7 @@ type UpsertRow = {
   studentName: string | null;
   status: "confirmed" | "cancelled";
   googleEtag: string | null;
+  googleColorId: string | null;
 };
 
 export function eventsToUpserts(events: GEvent[]): UpsertRow[] {
@@ -34,6 +35,7 @@ export function eventsToUpserts(events: GEvent[]): UpsertRow[] {
       studentName: e.summary ? parseStudentName(e.summary) : null,
       status: cancelled ? "cancelled" : "confirmed",
       googleEtag: e.etag ?? null,
+      googleColorId: e.colorId ?? null,
     });
   }
   return out;
@@ -54,6 +56,7 @@ async function upsertBatch(rows: UpsertRow[]) {
         studentName: sql`excluded.student_name`,
         status: sql`excluded.status`,
         googleEtag: sql`excluded.google_etag`,
+        googleColorId: sql`excluded.google_color_id`,
         syncedAt: sql`excluded.synced_at`,
       },
     });

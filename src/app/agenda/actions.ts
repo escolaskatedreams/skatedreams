@@ -43,6 +43,7 @@ export async function listEventsBetween(
     start: e.startsAt.toISOString(),
     end: e.endsAt.toISOString(),
     status: e.status,
+    googleColorId: e.googleColorId,
     flags: byEvent[e.id] ?? [],
   }));
 }

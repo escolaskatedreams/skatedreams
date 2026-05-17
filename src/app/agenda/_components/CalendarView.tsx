@@ -7,6 +7,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useRouter } from "next/navigation";
 import { LessonEventCard } from "@/components/calendar/LessonEventCard";
+import { colorForEvent } from "@/lib/google/colors";
 import { listEventsBetween } from "../actions";
 
 export function CalendarView({ showCancelled = false }: { showCancelled?: boolean }) {
@@ -15,15 +16,24 @@ export function CalendarView({ showCancelled = false }: { showCancelled?: boolea
 
   const fetchEvents = useCallback(async (info: { startStr: string; endStr: string }) => {
     const rows = await listEventsBetween(info.startStr, info.endStr, { showCancelled });
-    return rows.map((r) => ({
-      id: r.id,
-      title: r.title,
-      start: r.start,
-      end: r.end,
-      backgroundColor: r.status === "cancelled" ? "#6B7A99" : "#1F4FB0",
-      borderColor: r.status === "cancelled" ? "#6B7A99" : "#1F4FB0",
-      extendedProps: { studentName: r.studentName, flags: r.flags, status: r.status },
-    }));
+    return rows.map((r) => {
+      const { bg, fg } = colorForEvent(r.googleColorId, r.status);
+      return {
+        id: r.id,
+        title: r.title,
+        start: r.start,
+        end: r.end,
+        backgroundColor: bg,
+        borderColor: bg,
+        textColor: fg,
+        extendedProps: {
+          studentName: r.studentName,
+          flags: r.flags,
+          status: r.status,
+          fg,
+        },
+      };
+    });
   }, [showCancelled]);
 
   return (

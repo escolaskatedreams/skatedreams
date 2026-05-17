@@ -47,6 +47,7 @@ export const calendarEvents = pgTable(
     studentName: text("student_name"),
     status: text("status").$type<"confirmed" | "cancelled">().notNull().default("confirmed"),
     googleEtag: text("google_etag"),
+    googleColorId: text("google_color_id"),
     syncedAt: timestamp("synced_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => ({
