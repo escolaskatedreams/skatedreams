@@ -18,7 +18,15 @@ services:
       replicas: 1
       restart_policy:
         condition: on-failure
-    networks: [internal, edge]
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=network_swarm_public"
+        - "traefik.http.routers.skatedreams.rule=Host(`${APP_HOST}`)"
+        - "traefik.http.routers.skatedreams.entrypoints=websecure"
+        - "traefik.http.routers.skatedreams.tls=true"
+        - "traefik.http.routers.skatedreams.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}"
+        - "traefik.http.services.skatedreams.loadbalancer.server.port=3000"
+    networks: [internal, network_swarm_public]
     depends_on: [postgres]
 
   postgres:
@@ -38,8 +46,9 @@ volumes:
 
 networks:
   internal:
-  edge:
+  network_swarm_public:
     external: true
+    name: network_swarm_public
 
 secrets:
   google_sa_key:
