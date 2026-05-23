@@ -1,3 +1,8 @@
 {
-  "mcpServers": {}
+  "mcpServers": {
+    "google-drive-skatedreams": {
+      "command": "npx",
+      "args": ["-y", "@piotr-agier/google-drive-mcp"]
+    }
+  }
 }
