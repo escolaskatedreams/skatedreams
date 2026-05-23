@@ -3,6 +3,9 @@
     "google-drive-skatedreams": {
       "command": "npx",
       "args": ["-y", "@piotr-agier/google-drive-mcp"]
+    },
+    "n8n-skatedreams": {
+      "command": "/home/pedro/.config/n8n-mcp/run.sh"
     }
   }
 }
