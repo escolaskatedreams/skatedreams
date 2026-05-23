@@ -1,13 +1,18 @@
-# SkateDreams — Controle de Aulas
+# SkateDreams — Monorepo
 
-Sistema interno da Escola SkateDreams para registrar flags qualitativos sobre aulas individuais,
-sincronizado com o Google Agenda via service account.
+Sistema interno da Escola SkateDreams. Repo estruturado como monorepo:
+
+- [`app-skatedreams/`](app-skatedreams/) — app Next.js (controle de aulas, agenda, relatórios)
+- [`docs/`](docs/) — documentação técnica e brand (compartilhada entre apps)
+- [`secrets/`](secrets/) — credenciais fora do git (service accounts, tokens)
 
 > Documentação completa: [`docs/README.md`](docs/README.md).
 
 ## Dev
 
 ```bash
+cd app-skatedreams
+
 # 1. Postgres local
 docker compose -f docker/docker-compose.yml up -d postgres
 
@@ -18,7 +23,7 @@ echo "ENCRYPTION_KEY=$(openssl rand -base64 32)" >> .env.local
 echo "SESSION_SECRET=$(openssl rand -hex 32)" >> .env.local
 # Ajustar GOOGLE_SERVICE_ACCOUNT_KEY_PATH e GOOGLE_CALENDAR_ID
 
-# 3. Colocar o JSON do service account em secrets/google-service-account.json
+# 3. Colocar o JSON do service account em ../secrets/google-service-account.json
 # (gitignored — fornecido pelo cliente fora deste repo)
 
 # 4. Setup
