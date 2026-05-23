@@ -24,6 +24,7 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/src/lib/db/migrations ./src/lib/db/migrations
 COPY --from=builder /app/drizzle.config.ts ./
 COPY docker/entrypoint.sh ./entrypoint.sh
+COPY docker/seed.js ./seed.js
 RUN chmod +x ./entrypoint.sh
 
 EXPOSE 3000

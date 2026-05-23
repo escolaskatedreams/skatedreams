@@ -90,7 +90,8 @@ app-skatedreams/
 │   └── styles/
 ├── docker/
 │   ├── Dockerfile
-│   ├── entrypoint.sh              # migrations + next start
+│   ├── entrypoint.sh              # migrations + seed admin + next start
+│   ├── seed.js                    # cria admin inicial (idempotente)
 │   ├── docker-compose.yml         # dev local
 │   ├── stack.yml                  # template versionado (placeholders ${VARS})
 │   ├── stack.deploy.yml           # renderizado com segredos — gitignored
@@ -207,7 +208,8 @@ Portainer (CE) recebe webhook
     ▼
 entrypoint.sh do container
   1. npx drizzle-kit migrate
-  2. node next start
+  2. node seed.js  (idempotente: cria admin se faltar)
+  3. node next start
 ```
 
 **Tempo médio push → live:** ~5 min (build domina; webhook + swap são ~30s).
