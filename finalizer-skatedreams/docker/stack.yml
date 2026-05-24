@@ -1,0 +1,46 @@
+version: "3.9"
+
+# Stack do Swarm — template versionado.
+# stack.deploy.yml (gitignored) é a cópia renderizada com segredos.
+#
+# Variáveis esperadas:
+#   REGISTRY, TAG, FINALIZER_HOST, TRAEFIK_CERT_RESOLVER
+#   GOOGLE_SERVICE_ACCOUNT_JSON (base64), GOOGLE_CALENDAR_ID
+#   SHEETS_CONTROLE_ID
+#   APPS_SCRIPT_WEBHOOK_URL, APPS_SCRIPT_WEBHOOK_TOKEN
+#   FINALIZER_API_TOKEN
+
+services:
+  app:
+    image: ${REGISTRY}/finalizer:${TAG:-latest}
+    environment:
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${GOOGLE_SERVICE_ACCOUNT_JSON}
+      GOOGLE_CALENDAR_ID: ${GOOGLE_CALENDAR_ID:-escolaskatedreams@gmail.com}
+      SHEETS_CONTROLE_ID: ${SHEETS_CONTROLE_ID}
+      APPS_SCRIPT_WEBHOOK_URL: ${APPS_SCRIPT_WEBHOOK_URL}
+      APPS_SCRIPT_WEBHOOK_TOKEN: ${APPS_SCRIPT_WEBHOOK_TOKEN}
+      FINALIZER_API_TOKEN: ${FINALIZER_API_TOKEN}
+      FINALIZER_CRON_HOUR: ${FINALIZER_CRON_HOUR:-3}
+      FINALIZER_CRON_MINUTE: ${FINALIZER_CRON_MINUTE:-0}
+      FINALIZER_TIMEZONE: ${FINALIZER_TIMEZONE:-America/Sao_Paulo}
+      DRY_RUN: ${DRY_RUN:-false}
+      GRUPO_A_MAX_PER_CYCLE: ${GRUPO_A_MAX_PER_CYCLE:-50}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=network_swarm_public"
+        - "traefik.http.routers.finalizer.rule=Host(`${FINALIZER_HOST}`)"
+        - "traefik.http.routers.finalizer.entrypoints=websecure"
+        - "traefik.http.routers.finalizer.tls=true"
+        - "traefik.http.routers.finalizer.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencryptresolver}"
+        - "traefik.http.services.finalizer.loadbalancer.server.port=8080"
+    networks: [network_swarm_public]
+
+networks:
+  network_swarm_public:
+    external: true
+    name: network_swarm_public

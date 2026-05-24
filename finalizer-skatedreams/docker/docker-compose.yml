@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  finalizer:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: finalizer:dev
+    ports:
+      - "8080:8080"
+    environment:
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${GOOGLE_SERVICE_ACCOUNT_JSON}
+      GOOGLE_CALENDAR_ID: ${GOOGLE_CALENDAR_ID:-escolaskatedreams@gmail.com}
+      SHEETS_CONTROLE_ID: ${SHEETS_CONTROLE_ID}
+      APPS_SCRIPT_WEBHOOK_URL: ${APPS_SCRIPT_WEBHOOK_URL}
+      APPS_SCRIPT_WEBHOOK_TOKEN: ${APPS_SCRIPT_WEBHOOK_TOKEN}
+      FINALIZER_API_TOKEN: ${FINALIZER_API_TOKEN}
+      FINALIZER_CRON_HOUR: ${FINALIZER_CRON_HOUR:-3}
+      FINALIZER_TIMEZONE: ${FINALIZER_TIMEZONE:-America/Sao_Paulo}
+      DRY_RUN: ${DRY_RUN:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
