@@ -1,12 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
-import { db, eventFlags } from "@/lib/db";
+import { db, eventFlags, calendarEvents } from "@/lib/db";
 import { FLAG_TYPES, type FlagType } from "@/lib/db/schema";
 import { requireSession } from "@/lib/auth/guards";
 import { getSession } from "@/lib/auth/session";
+import { getAuthorizedClient } from "@/lib/google/connection";
+import { getCalendarId } from "@/lib/google/auth";
+import { patchEvent } from "@/lib/google/calendar";
+import { buildTitleWithFlags } from "@/lib/flags/title-prefix";
 
 const bodySchema = z.object({ flagType: z.enum(FLAG_TYPES as [FlagType, ...FlagType[]]) });
+
+async function syncTitleToGoogle(eventId: string) {
+  const [ev] = await db.select().from(calendarEvents).where(eq(calendarEvents.id, eventId));
+  if (!ev) return;
+  const rows = await db.select().from(eventFlags).where(eq(eventFlags.eventId, eventId));
+  const flags = rows.map((r) => r.flagType);
+  const newTitle = buildTitleWithFlags(ev.title, flags);
+  if (newTitle === ev.title) return;
+  const client = await getAuthorizedClient();
+  const r = await patchEvent(client, ev.googleId, { title: newTitle }, getCalendarId());
+  await db
+    .update(calendarEvents)
+    .set({ title: newTitle, googleEtag: r.etag ?? ev.googleEtag, syncedAt: new Date() })
+    .where(eq(calendarEvents.id, eventId));
+}
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   await requireSession();
@@ -20,6 +39,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     .values({ eventId: id, flagType: parsed.data.flagType, createdBy: session.userId! })
     .onConflictDoNothing();
 
+  await syncTitleToGoogle(id);
   return NextResponse.json({ ok: true });
 }
 
@@ -33,5 +53,6 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
     .delete(eventFlags)
     .where(and(eq(eventFlags.eventId, id), eq(eventFlags.flagType, parsed.data.flagType)));
 
+  await syncTitleToGoogle(id);
   return NextResponse.json({ ok: true });
 }

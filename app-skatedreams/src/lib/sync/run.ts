@@ -4,6 +4,7 @@ import { getGoogleClient, getCalendarId } from "@/lib/google/auth";
 import { ensureConnection, updateSyncState } from "@/lib/google/connection";
 import { listEvents, type GEvent } from "@/lib/google/calendar";
 import { parseStudentName } from "./parse-student-name";
+import { stripFlagPrefix } from "@/lib/flags/title-prefix";
 import { env } from "@/env";
 
 type UpsertRow = {
@@ -26,13 +27,14 @@ export function eventsToUpserts(events: GEvent[]): UpsertRow[] {
     const startDt = e.start?.dateTime;
     const endDt = e.end?.dateTime;
     if (!cancelled && (!startDt || !endDt)) continue; // ignora all-day
+    const rawTitle = e.summary ?? "(sem título)";
     out.push({
       googleId: e.id,
-      title: e.summary ?? "(sem título)",
+      title: rawTitle,
       description: e.description ?? null,
       startsAt: new Date(startDt ?? Date.now()),
       endsAt: new Date(endDt ?? Date.now()),
-      studentName: e.summary ? parseStudentName(e.summary) : null,
+      studentName: e.summary ? parseStudentName(stripFlagPrefix(rawTitle)) : null,
       status: cancelled ? "cancelled" : "confirmed",
       googleEtag: e.etag ?? null,
       googleColorId: e.colorId ?? null,

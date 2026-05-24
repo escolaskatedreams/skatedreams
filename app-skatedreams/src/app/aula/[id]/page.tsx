@@ -18,7 +18,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
         event={{
           id: event.id,
           title: event.title,
-          description: event.description,
+          notes: event.notes,
           startsAt: event.startsAt.toISOString(),
           endsAt: event.endsAt.toISOString(),
           status: event.status,

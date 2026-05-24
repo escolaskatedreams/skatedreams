@@ -1,51 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { LessonEventCard } from "@/components/calendar/LessonEventCard";
 import { colorForEvent } from "@/lib/google/colors";
-import { FlagBar } from "./FlagBar";
 import { listEventsBetween } from "../actions";
 
-type PopoverState = {
-  eventId: string;
-  studentName: string | null;
-  title: string;
-  timeText: string;
-  initialFlags: string[];
-  top: number;
-  left: number;
-  align: "left" | "right";
-};
-
-function fmtTimeRange(start: Date, end: Date) {
-  const fmt = (d: Date) => d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-  return `${fmt(start)} – ${fmt(end)}`;
-}
-
 export function CalendarView({ showCancelled = false }: { showCancelled?: boolean }) {
-  const fcRef = useRef<FullCalendar | null>(null);
   const router = useRouter();
-  const [popover, setPopover] = useState<PopoverState | null>(null);
-  const hideTimer = useRef<number | null>(null);
-
-  const clearHide = () => {
-    if (hideTimer.current !== null) {
-      window.clearTimeout(hideTimer.current);
-      hideTimer.current = null;
-    }
-  };
-  const scheduleHide = () => {
-    clearHide();
-    hideTimer.current = window.setTimeout(() => setPopover(null), 180);
-  };
-
-  useEffect(() => () => clearHide(), []);
 
   const fetchEvents = useCallback(
     async (info: { startStr: string; endStr: string }) => {
@@ -73,111 +39,24 @@ export function CalendarView({ showCancelled = false }: { showCancelled?: boolea
   );
 
   return (
-    <>
-      <FullCalendar
-        ref={fcRef}
-        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-        initialView="timeGridDay"
-        locale="pt-br"
-        firstDay={1}
-        headerToolbar={{
-          left: "prev,next today",
-          center: "title",
-          right: "",
-        }}
-        buttonText={{ today: "Hoje" }}
-        allDaySlot={false}
-        slotMinTime="07:00:00"
-        slotMaxTime="22:00:00"
-        events={fetchEvents}
-        eventContent={LessonEventCard}
-        eventClick={(arg) => router.push(`/aula/${arg.event.id}`)}
-        eventDidMount={(info) => {
-          const el = info.el;
-          const ev = info.event;
-
-          const open = () => {
-            clearHide();
-            const rect = el.getBoundingClientRect();
-
-            // FullCalendar sobrepõe eventos com width FULL da coluna + z-index.
-            // rect.right é a borda do elemento full (não do strip visível).
-            // Computa "visibleRight" como a borda esquerda do próximo evento
-            // sobreposto na mesma linha (ou rect.right se for o último).
-            const allEvents = document.querySelectorAll(
-              ".fc-timegrid-event, .fc-daygrid-event",
-            ) as NodeListOf<HTMLElement>;
-            let visibleRight = rect.right;
-            for (const sib of allEvents) {
-              if (sib === el) continue;
-              const sr = sib.getBoundingClientRect();
-              if (Math.abs(sr.top - rect.top) < 4 && sr.left > rect.left && sr.left < visibleRight) {
-                visibleRight = sr.left;
-              }
-            }
-
-            const vw = window.innerWidth;
-            const popoverWidth = 320;
-            const fitsRight = visibleRight + popoverWidth <= vw - 8;
-            // Pequena sobreposição (8px) garante que mouse entra no popover
-            // antes de sair do source — sem isso há uma race entre mouseleave
-            // do evento e mouseenter do popover, e o popover fecha.
-            const left = fitsRight ? visibleRight - 8 : rect.left - popoverWidth + 8;
-            setPopover({
-              eventId: ev.id,
-              studentName: (ev.extendedProps.studentName as string | null) ?? null,
-              title: ev.title,
-              timeText: fmtTimeRange(ev.start ?? new Date(), ev.end ?? new Date()),
-              initialFlags: (ev.extendedProps.flags as string[]) ?? [],
-              top: rect.top,
-              left,
-              align: fitsRight ? "left" : "right",
-            });
-          };
-
-          el.addEventListener("mouseenter", open);
-          el.addEventListener("mouseleave", scheduleHide);
-        }}
-        height="auto"
-      />
-
-      {popover && (
-        <div
-          style={{
-            position: "fixed",
-            top: popover.top,
-            left: popover.left,
-            zIndex: 60,
-          }}
-          onMouseEnter={clearHide}
-          onMouseLeave={scheduleHide}
-          className="w-80 bg-brand-cloud rounded-2xl shadow-soft-xl ring-1 ring-brand-ink/10 p-4 space-y-3"
-          role="dialog"
-          aria-label="Marcar flags"
-        >
-          <div>
-            <div className="font-display text-base text-brand-ink leading-tight">
-              {popover.studentName ?? popover.title}
-            </div>
-            <div className="text-xs text-brand-muted font-mono mt-0.5">{popover.timeText}</div>
-          </div>
-          <FlagBar
-            eventId={popover.eventId}
-            initialFlags={popover.initialFlags}
-            size="sm"
-            onChange={() => {
-              // após toggle, atualiza a agenda no background para o evento refletir
-              fcRef.current?.getApi().refetchEvents();
-            }}
-          />
-          <Link
-            href={`/aula/${popover.eventId}`}
-            className="block text-xs text-brand-muted hover:text-brand-primary text-right pt-1"
-          >
-            editar detalhes →
-          </Link>
-        </div>
-      )}
-    </>
+    <FullCalendar
+      plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+      initialView="timeGridDay"
+      locale="pt-br"
+      firstDay={1}
+      headerToolbar={{
+        left: "prev,next today",
+        center: "title",
+        right: "",
+      }}
+      buttonText={{ today: "Hoje" }}
+      allDaySlot={false}
+      slotMinTime="07:00:00"
+      slotMaxTime="22:00:00"
+      events={fetchEvents}
+      eventContent={LessonEventCard}
+      eventClick={(arg) => router.push(`/aula/${arg.event.id}`)}
+      height="auto"
+    />
   );
 }

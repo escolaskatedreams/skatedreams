@@ -22,7 +22,7 @@ export default async function LessonModal({ params }: { params: Promise<{ id: st
           event={{
             id: event.id,
             title: event.title,
-            description: event.description,
+            notes: event.notes,
             startsAt: event.startsAt.toISOString(),
             endsAt: event.endsAt.toISOString(),
             status: event.status,
