@@ -24,3 +24,4 @@ docs/brand/assets/**/*.pdf
 docs/brand/assets/**/*.mp4
 docs/brand/assets/**/*.mov
 docs/brand/assets/**/*.gif
+apps-script-webhook.json
