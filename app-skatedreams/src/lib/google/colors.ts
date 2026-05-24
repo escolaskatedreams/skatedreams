@@ -4,8 +4,8 @@
  * usado pela própria interface do Google. Mantido em código (a API
  * `calendar.colors.get` retorna isso dinamicamente, mas é estável historicamente).
  *
- * Eventos sem colorId herdam a cor padrão do calendário — usamos brand-primary
- * (`#1F4FB0`) como fallback para alinhar com a identidade SkateDreams.
+ * Eventos sem colorId herdam a cor padrão do calendário — usamos Peacock
+ * (`#039BE5`) como fallback, que é a cor default do próprio Google Calendar.
  */
 
 export const GOOGLE_EVENT_COLORS: Record<string, { name: string; bg: string; fg: string }> = {
@@ -22,7 +22,7 @@ export const GOOGLE_EVENT_COLORS: Record<string, { name: string; bg: string; fg:
   "11": { name: "Tomato", bg: "#D50000", fg: "#FFFFFF" },
 };
 
-export const DEFAULT_EVENT_BG = "#1F4FB0"; // brand-primary
+export const DEFAULT_EVENT_BG = "#039BE5"; // Peacock (default do Google Calendar)
 export const DEFAULT_EVENT_FG = "#FFFFFF";
 export const CANCELLED_BG = "#6B7A99"; // brand-muted
 export const CANCELLED_FG = "#FFFFFF";
