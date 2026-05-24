@@ -45,3 +45,9 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "N"]
 ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# P/Q/R/S são nomes das colunas da planilha Controle — naming do domínio
+"src/finalizer/domain/grupo_b.py" = ["N806"]
+# tests podem usar pytest.raises(Exception) pra cobertura
+"tests/**/*.py" = ["B017"]
