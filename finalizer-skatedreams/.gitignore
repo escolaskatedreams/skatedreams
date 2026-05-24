@@ -14,3 +14,4 @@ build/
 docker/stack.env
 docker/stack.deploy.yml
 secrets/
+# uv.lock IS committed for reproducibility
