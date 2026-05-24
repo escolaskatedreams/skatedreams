@@ -12,19 +12,20 @@ import { buildTitleWithFlags } from "@/lib/flags/title-prefix";
 
 const bodySchema = z.object({ flagType: z.enum(FLAG_TYPES as [FlagType, ...FlagType[]]) });
 
-async function syncTitleToGoogle(eventId: string) {
+async function syncTitleToGoogle(eventId: string): Promise<string | null> {
   const [ev] = await db.select().from(calendarEvents).where(eq(calendarEvents.id, eventId));
-  if (!ev) return;
+  if (!ev) return null;
   const rows = await db.select().from(eventFlags).where(eq(eventFlags.eventId, eventId));
   const flags = rows.map((r) => r.flagType);
   const newTitle = buildTitleWithFlags(ev.title, flags);
-  if (newTitle === ev.title) return;
+  if (newTitle === ev.title) return ev.title;
   const client = await getAuthorizedClient();
   const r = await patchEvent(client, ev.googleId, { title: newTitle }, getCalendarId());
   await db
     .update(calendarEvents)
     .set({ title: newTitle, googleEtag: r.etag ?? ev.googleEtag, syncedAt: new Date() })
     .where(eq(calendarEvents.id, eventId));
+  return newTitle;
 }
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
@@ -39,8 +40,8 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     .values({ eventId: id, flagType: parsed.data.flagType, createdBy: session.userId! })
     .onConflictDoNothing();
 
-  await syncTitleToGoogle(id);
-  return NextResponse.json({ ok: true });
+  const title = await syncTitleToGoogle(id);
+  return NextResponse.json({ ok: true, title });
 }
 
 export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
@@ -53,6 +54,6 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
     .delete(eventFlags)
     .where(and(eq(eventFlags.eventId, id), eq(eventFlags.flagType, parsed.data.flagType)));
 
-  await syncTitleToGoogle(id);
-  return NextResponse.json({ ok: true });
+  const title = await syncTitleToGoogle(id);
+  return NextResponse.json({ ok: true, title });
 }

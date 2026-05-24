@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -12,6 +12,13 @@ import { listEventsBetween } from "../actions";
 
 export function CalendarView({ showCancelled = false }: { showCancelled?: boolean }) {
   const router = useRouter();
+  const fcRef = useRef<FullCalendar | null>(null);
+
+  useEffect(() => {
+    const handler = () => fcRef.current?.getApi().refetchEvents();
+    window.addEventListener("event-title-changed", handler);
+    return () => window.removeEventListener("event-title-changed", handler);
+  }, []);
 
   const fetchEvents = useCallback(
     async (info: { startStr: string; endStr: string }) => {
@@ -40,6 +47,7 @@ export function CalendarView({ showCancelled = false }: { showCancelled?: boolea
 
   return (
     <FullCalendar
+      ref={fcRef}
       plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
       initialView="timeGridDay"
       locale="pt-br"

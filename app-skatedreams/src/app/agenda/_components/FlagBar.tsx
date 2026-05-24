@@ -14,10 +14,11 @@ type Props = {
   eventId: string;
   initialFlags: string[];
   onChange?: (next: string[]) => void;
-  size?: "sm" | "md"; // sm pra popover, md pra mobile card
+  onTitleChange?: (title: string) => void;
+  size?: "sm" | "md";
 };
 
-export function FlagBar({ eventId, initialFlags, onChange, size = "md" }: Props) {
+export function FlagBar({ eventId, initialFlags, onChange, onTitleChange, size = "md" }: Props) {
   const [flags, setFlags] = useState<Set<string>>(new Set(initialFlags));
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -35,6 +36,13 @@ export function FlagBar({ eventId, initialFlags, onChange, size = "md" }: Props)
         body: JSON.stringify({ flagType: type }),
       });
       if (!res.ok) throw new Error("flag toggle failed");
+      const data = (await res.json()) as { title?: string | null };
+      if (data.title) {
+        onTitleChange?.(data.title);
+        window.dispatchEvent(
+          new CustomEvent("event-title-changed", { detail: { eventId, title: data.title } }),
+        );
+      }
     } catch {
       setFlags(new Set(initialFlags));
       onChange?.(initialFlags);

@@ -28,6 +28,7 @@ const lockedClass = "w-full bg-brand-ink/5 border-0 rounded-xl px-4 py-3 font-bo
 export function LessonForm({ event }: Props) {
   const router = useRouter();
   const [notes, setNotes] = useState(event.notes ?? "");
+  const [title, setTitle] = useState(event.title);
   const [saving, setSaving] = useState(false);
 
   const startsLocal = toLocalInput(event.startsAt);
@@ -53,7 +54,7 @@ export function LessonForm({ event }: Props) {
     <div className="space-y-4">
       <div>
         <label className="block text-xs font-medium text-brand-ink mb-1.5 uppercase tracking-wider">Título</label>
-        <input value={event.title} readOnly className={lockedClass} />
+        <input value={title} readOnly className={lockedClass} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
@@ -72,7 +73,12 @@ export function LessonForm({ event }: Props) {
 
       <div>
         <p className="text-xs font-medium text-brand-ink mb-2 uppercase tracking-wider">Flags</p>
-        <FlagBar eventId={event.id} initialFlags={event.flags} size="md" />
+        <FlagBar
+          eventId={event.id}
+          initialFlags={event.flags}
+          onTitleChange={setTitle}
+          size="md"
+        />
       </div>
 
       <div className="flex gap-2">
